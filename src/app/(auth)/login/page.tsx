@@ -47,11 +47,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm shadow-xl">
         <CardHeader className="text-center">
-            <div className="mx-auto mb-6 h-16 w-auto">
+            <div className="mx-auto mb-4 h-12 w-auto">
                 <Logo />
             </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome to TractorLink
+            Welcome Back
           </CardTitle>
         </CardHeader>
         <CardContent>
