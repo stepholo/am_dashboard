@@ -9,9 +9,11 @@
  *   that the user with the corresponding UID is a global administrator.
  * - /dashboardLinks/{dashboardLinkId}: A collection of link documents.
  * - /users/{uid}: Stores public user profile information.
+ * - /internal/seedMarker: A document to track if initial data has been seeded.
  *
  * Key Security Decisions:
  * - Admin Supremacy: Users in `/roles_admin` can manage all data.
+ * - One-Time Seeding: Any authenticated user can perform the initial data seed if it hasn't been done.
  * - User Self-Management: Authenticated users can create and update their own
  *   profile document in the `/users` collection, but cannot edit others'.
  * - Read-Only for Public Data: Regular authenticated users can read dashboard links.
@@ -32,14 +34,25 @@ service cloud.firestore {
     function isAdmin() {
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
+    
+    function isSeeding() {
+      return !exists(/databases/$(database)/documents/internal/seedMarker);
+    }
 
     match /roles_admin/{uid} {
       allow read, write: if isAdmin();
     }
+    
+    match /internal/seedMarker {
+      // Anyone can read the marker. Allow write only if it's the initial seed.
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSeeding();
+    }
 
     match /dashboardLinks/{dashboardLinkId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      // Allow admin to do anything. Allow initial seed write.
+      allow write: if isAdmin() || (isSignedIn() && isSeeding());
     }
 
     /**
