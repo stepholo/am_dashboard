@@ -19,6 +19,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
   const [loading, setLoading] = useState(true);
 
   const fetchLinks = async () => {
+    if (!db) return;
     setLoading(true);
     const fetchedLinks = await getLinksForSection(db, sectionSlug);
     setLinks(fetchedLinks);
@@ -42,7 +43,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
       
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
+          {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-[280px] rounded-lg" />)}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

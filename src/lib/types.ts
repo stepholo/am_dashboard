@@ -13,4 +13,6 @@ export type DashboardLink = {
   section: string;
   type: 'embed' | 'external' | 'protocol';
   order: number;
+  imageUrl?: string;
+  imageHint?: string;
 };

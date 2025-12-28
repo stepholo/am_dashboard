@@ -1,10 +1,12 @@
 "use client";
 
+import Image from 'next/image';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardFooter,
+  CardContent,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,57 +58,72 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
   }
 
   return (
-    <Card className="flex h-32 flex-col justify-between shadow-md transition-shadow hover:shadow-xl">
-      <CardHeader className="flex-row items-start justify-between pb-2">
-        <CardTitle className="text-base font-medium leading-snug">
-          {link.name}
-        </CardTitle>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {link.type === 'embed' && (
-              <>
-                <DropdownMenuItem onClick={() => openInSinglePane(link.url, link.name)}>
-                  <Tv className="mr-2 h-4 w-4" />
-                  <span>Open on Dashboard</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openInSplitPane(link.url, link.name)}>
-                  <Columns className="mr-2 h-4 w-4" />
-                  <span>Open in Split Screen</span>
-                </DropdownMenuItem>
-              </>
-            )}
-            <DropdownMenuItem onClick={() => window.open(link.url, '_blank')}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              <span>Open in New Tab</span>
-            </DropdownMenuItem>
-            {user?.role === 'admin' && (
+    <Card className="flex flex-col justify-between shadow-md transition-shadow hover:shadow-xl overflow-hidden">
+        {link.imageUrl && (
+            <CardContent className="p-0">
+                <div className="relative h-32 w-full">
+                    <Image 
+                        src={link.imageUrl}
+                        alt={link.name}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={link.imageHint}
+                    />
+                </div>
+            </CardContent>
+        )}
+      <div className='flex flex-col flex-1 justify-between p-4'>
+        <CardHeader className="flex-row items-start justify-between pb-2 p-0">
+            <CardTitle className="text-base font-medium leading-snug">
+            {link.name}
+            </CardTitle>
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 -mt-1 -mr-1">
+                <MoreVertical className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {link.type === 'embed' && (
                 <>
-                    <DropdownMenuSeparator />
-                    <AddLinkButton linkToEdit={link} onLinkAdded={onUpdate} trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
-                        </DropdownMenuItem>
-                    } />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Delete</span>
+                    <DropdownMenuItem onClick={() => openInSinglePane(link.url, link.name)}>
+                    <Tv className="mr-2 h-4 w-4" />
+                    <span>Open on Dashboard</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openInSplitPane(link.url, link.name)}>
+                    <Columns className="mr-2 h-4 w-4" />
+                    <span>Open in Split Screen</span>
                     </DropdownMenuItem>
                 </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </CardHeader>
-      <CardFooter>
-        <Button onClick={handleOpen} className="w-full">
-          Open
-        </Button>
-      </CardFooter>
+                )}
+                <DropdownMenuItem onClick={() => window.open(link.url, '_blank')}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                <span>Open in New Tab</span>
+                </DropdownMenuItem>
+                {user?.role === 'admin' && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <AddLinkButton linkToEdit={link} onLinkAdded={onUpdate} trigger={
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                <span>Edit</span>
+                            </DropdownMenuItem>
+                        } />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete</span>
+                        </DropdownMenuItem>
+                    </>
+                )}
+            </DropdownMenuContent>
+            </DropdownMenu>
+        </CardHeader>
+        <CardFooter className="p-0 pt-4">
+            <Button onClick={handleOpen} className="w-full">
+            Open
+            </Button>
+        </CardFooter>
+      </div>
     </Card>
   );
 }

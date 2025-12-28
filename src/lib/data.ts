@@ -1,18 +1,23 @@
 import type { DashboardLink } from './types';
+import { placeholderImages } from './placeholder-images';
 
-export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = [
+const linksWithImages: Omit<DashboardLink, 'id' | 'order'>[] = [
   // PAYG Operations
   {
     name: 'PAYG Pipeline Portal',
     url: 'https://payg.hellotractor.com/',
     section: 'payg-operations',
     type: 'external',
+    imageUrl: placeholderImages[0].imageUrl,
+    imageHint: placeholderImages[0].imageHint,
   },
   {
     name: 'Pipeline Spreadsheet',
     url: 'https://docs.google.com/spreadsheets/d/1AB5XqXmvMqlTQrbu4Qc0pa0dtEIS4TbCUasvOZDCBVw/edit?rm=minimal',
     section: 'payg-operations',
     type: 'embed',
+    imageUrl: placeholderImages[1].imageUrl,
+    imageHint: placeholderImages[1].imageHint,
   },
   // Invoicing
   {
@@ -20,12 +25,16 @@ export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = [
     url: 'https://api.hellotractor.com/payg/admin/',
     section: 'invoicing',
     type: 'external',
+    imageUrl: placeholderImages[2].imageUrl,
+    imageHint: placeholderImages[2].imageHint,
   },
   {
     name: 'Invoicing Spreadsheet',
     url: 'https://docs.google.com/spreadsheets/d/1xARIH_9bKQegwQ4n7Bik-DCjYUoh7wftNH0v8GsFJ0A/edit?rm=minimal',
     section: 'invoicing',
     type: 'embed',
+    imageUrl: placeholderImages[3].imageUrl,
+    imageHint: placeholderImages[3].imageHint,
   },
   // Tractor Service
   {
@@ -33,18 +42,24 @@ export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = [
     url: 'https://ht-dealer-portal-v2.web.app/dashboard',
     section: 'tractor-service',
     type: 'external',
+    imageUrl: placeholderImages[4].imageUrl,
+    imageHint: placeholderImages[4].imageHint,
   },
   {
     name: 'Hello Tractor Service Reports',
     url: 'https://docs.google.com/spreadsheets/d/1hUHeCjTyJHUajNAfnJk-o4FVwP2qhN6h/edit?rm=minimal',
     section: 'tractor-service',
     type: 'embed',
+    imageUrl: placeholderImages[5].imageUrl,
+    imageHint: placeholderImages[5].imageHint,
   },
   {
     name: 'Job Card Responses',
     url: 'https://docs.google.com/spreadsheets/d/1KCmjJc-8Uk_LsVlgsf4RZw0iBsJRR4GpCQpB1igWSNs/edit?rm=minimal',
     section: 'tractor-service',
     type: 'embed',
+    imageUrl: placeholderImages[6].imageUrl,
+    imageHint: placeholderImages[6].imageHint,
   },
   // Reports
   {
@@ -52,36 +67,48 @@ export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = [
     url: 'https://docs.google.com/spreadsheets/d/1ecQtxLZXN8H08rT5xc0IN-4cDUkzOY9wKeYCP3gdzzQ/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[7].imageUrl,
+    imageHint: placeholderImages[7].imageHint,
   },
   {
     name: 'Account Managers Portfolio',
     url: 'https://docs.google.com/spreadsheets/d/1dA3a5SHnPVeBHlBKcsr635xmn6rN4lQg/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[8].imageUrl,
+    imageHint: placeholderImages[8].imageHint,
   },
   {
     name: 'Covenant Targets',
     url: 'https://docs.google.com/spreadsheets/d/1Tq8ghFMcrnkqU24S1G1Dpc5GwQEsBIqXkyErJbP1XtQ/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[9].imageUrl,
+    imageHint: placeholderImages[9].imageHint,
   },
   {
     name: 'Agrimec Reassigned Tractors',
     url: 'https://docs.google.com/spreadsheets/d/113fwM7rQiBNETsJ_r7a4HiyPFIYZP6x4Ndq0IsfNuX0/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[10].imageUrl,
+    imageHint: placeholderImages[10].imageHint,
   },
   {
     name: 'Surcharge Revenue Analysis',
     url: 'https://docs.google.com/spreadsheets/d/1laGtCc25Anc_x2P_XgQrVHHaxaERH6yxViVOvKYhac4/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[11].imageUrl,
+    imageHint: placeholderImages[11].imageHint,
   },
   {
     name: 'Top Renters',
     url: 'https://docs.google.com/spreadsheets/d/1y1WEIhbijqnIakk_t01r2IBTFGn5mwpNObf3JpPxP6w/edit?rm=minimal',
     section: 'reports',
     type: 'embed',
+    imageUrl: placeholderImages[12].imageUrl,
+    imageHint: placeholderImages[12].imageHint,
   },
   // Utilities
   {
@@ -89,59 +116,82 @@ export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = [
     url: 'https://0416503c.us1a.app.preset.io/superset/dashboard/37/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[13].imageUrl,
+    imageHint: placeholderImages[13].imageHint,
   },
   {
     name: 'Farmers Preset',
     url: 'https://0416503c.us1a.app.preset.io/superset/dashboard/19/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[14].imageUrl,
+    imageHint: placeholderImages[14].imageHint,
   },
   {
     name: 'Tractor Preset',
     url: 'https://0416503c.us1a.app.preset.io/superset/dashboard/36/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[15].imageUrl,
+    imageHint: placeholderImages[15].imageHint,
   },
   {
     name: 'Change Accounts',
     url: 'https://api.hellotractor.com/admin/user_auth/commonuser/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[16].imageUrl,
+    imageHint: placeholderImages[16].imageHint,
   },
   {
     name: 'HubSpot',
     url: 'https://app.hubspot.com/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[17].imageUrl,
+    imageHint: placeholderImages[17].imageHint,
   },
   {
     name: 'Booking Console',
     url: 'https://console.hellotractor.com/owner',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[18].imageUrl,
+    imageHint: placeholderImages[18].imageHint,
   },
   {
     name: 'Learning (Udemy)',
     url: 'https://hellotractor.udemy.com/organization',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[19].imageUrl,
+    imageHint: placeholderImages[19].imageHint,
   },
   {
     name: 'WorkPay',
     url: 'https://dashboard.myworkpay.com/',
     section: 'utilities',
     type: 'external',
+    imageUrl: placeholderImages[20].imageUrl,
+    imageHint: placeholderImages[20].imageHint,
   },
   {
     name: 'Phone Link',
     url: 'ms-phone:',
     section: 'utilities',
     type: 'protocol',
+    imageUrl: placeholderImages[21].imageUrl,
+    imageHint: placeholderImages[21].imageHint,
   },
   {
     name: 'Power Automate',
     url: 'ms-powerautomate:',
     section: 'utilities',
     type: 'protocol',
+    imageUrl: placeholderImages[22].imageUrl,
+    imageHint: placeholderImages[22].imageHint,
   },
 ];
+
+
+export const seedData: Omit<DashboardLink, 'id' | 'order'>[] = linksWithImages;

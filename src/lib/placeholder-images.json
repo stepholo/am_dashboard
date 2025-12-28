@@ -1,3 +1,142 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "1",
+      "description": "PAYG Pipeline Portal",
+      "imageUrl": "https://images.unsplash.com/photo-1613690168541-992f5e5d9ae0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaXBlbGluZSUyMGFuYWx5dGljc3xlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pipeline analytics"
+    },
+    {
+      "id": "2",
+      "description": "Pipeline Spreadsheet",
+      "imageUrl": "https://images.unsplash.com/photo-1587401511935-a7f87afadf2f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzcHJlYWRzaGVldCUyMGRhdGF8ZW58MHx8fHwxNzY2OTAwNjg3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "spreadsheet data"
+    },
+    {
+      "id": "3",
+      "description": "Loan Management System",
+      "imageUrl": "https://images.unsplash.com/photo-1704820450831-d537211f2b3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxsb2FuJTIwbWFuYWdlbWVudHxlbnwwfHx8fDE3NjY5MjczMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "loan management"
+    },
+    {
+      "id": "4",
+      "description": "Invoicing Spreadsheet",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-cfa08c2a758f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxpbnZvaWNpbmclMjBzcHJlYWRzaGVldHxlbnwwfHx8fDE3NjY5MjczMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "invoicing spreadsheet"
+    },
+    {
+      "id": "5",
+      "description": "HT Dealer Portal",
+      "imageUrl": "https://images.unsplash.com/photo-1580145646005-a0c83489adc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkZWFsZXIlMjBwb3J0YWx8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dealer portal"
+    },
+    {
+      "id": "6",
+      "description": "Hello Tractor Service Reports",
+      "imageUrl": "https://images.unsplash.com/photo-1605152276897-4f618f831968?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzZXJ2aWNlJTIwcmVwb3J0c3xlbnwwfHx8fDE3NjY5MjczMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "service reports"
+    },
+    {
+      "id": "7",
+      "description": "Job Card Responses",
+      "imageUrl": "https://images.unsplash.com/photo-1758887248912-03a0c34a2f41?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxqb2IlMjBjYXJkfGVufDB8fHx8MTc2NjkyNzMyNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "job card"
+    },
+    {
+      "id": "8",
+      "description": "Kenya Covenant / Billed / Collected",
+      "imageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmaW5hbmNpYWwlMjByZXBvcnR8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "financial report"
+    },
+    {
+      "id": "9",
+      "description": "Account Managers Portfolio",
+      "imageUrl": "https://images.unsplash.com/photo-1762463176318-3cc33ec64ba2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwb3J0Zm9saW8lMjBtYW5hZ2VyfGVufDB8fHx8MTc2NjkyNzMyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "portfolio manager"
+    },
+    {
+      "id": "10",
+      "description": "Covenant Targets",
+      "imageUrl": "https://images.unsplash.com/photo-1728518278514-649c8fe6b949?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx0YXJnZXRzJTIwZGFzaGJvYXJkfGVufDB8fHx8MTc2NjkyNzMyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "targets dashboard"
+    },
+    {
+      "id": "11",
+      "description": "Agrimec Reassigned Tractors",
+      "imageUrl": "https://images.unsplash.com/photo-1669345489803-4457921801e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0cmFjdG9ycyUyMGZhcm18ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tractors farm"
+    },
+    {
+      "id": "12",
+      "description": "Surcharge Revenue Analysis",
+      "imageUrl": "https://images.unsplash.com/photo-1753955900083-b62ee8d97805?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxyZXZlbnVlJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "revenue analysis"
+    },
+    {
+      "id": "13",
+      "description": "Top Renters",
+      "imageUrl": "https://images.unsplash.com/photo-1730382624709-81e52dd294d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaGFydHMlMjBncmFwaHN8ZW58MHx8fHwxNzY2ODE3MjMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "charts graphs"
+    },
+    {
+      "id": "14",
+      "description": "Booking Preset",
+      "imageUrl": "https://images.unsplash.com/photo-1703300450387-047da16a89c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxib29raW5nJTIwY2FsZW5kYXJ8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "booking calendar"
+    },
+    {
+      "id": "15",
+      "description": "Farmers Preset",
+      "imageUrl": "https://images.unsplash.com/photo-1755719523098-227f4c486eb1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmYXJtZXJzJTIwZGF0YXxlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "farmers data"
+    },
+    {
+      "id": "16",
+      "description": "Tractor Preset",
+      "imageUrl": "https://images.unsplash.com/photo-1749058069678-62a8cf15cf03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx0cmFjdG9yJTIwZGF0YXxlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tractor data"
+    },
+    {
+      "id": "17",
+      "description": "Change Accounts",
+      "imageUrl": "https://images.unsplash.com/photo-1758522484797-49f88e04809c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx1c2VyJTIwYWNjb3VudHN8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "user accounts"
+    },
+    {
+      "id": "18",
+      "description": "HubSpot",
+      "imageUrl": "https://images.unsplash.com/photo-1584301952952-8544e5ae7a26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjcm0lMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzY2OTI3MzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "crm dashboard"
+    },
+    {
+      "id": "19",
+      "description": "Booking Console",
+      "imageUrl": "https://images.unsplash.com/photo-1667893529529-292f71b63b86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y29uc29sZSUyMGRhc2hib2FyZHxlbnwwfHx8fDE3NjY5MjczMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "console dashboard"
+    },
+    {
+      "id": "20",
+      "description": "Learning (Udemy)",
+      "imageUrl": "https://images.unsplash.com/photo-1588702547954-4800ead296ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "online learning"
+    },
+    {
+      "id": "21",
+      "description": "WorkPay",
+      "imageUrl": "https://images.unsplash.com/photo-1596248675029-bd9b0c7dc479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwYXlyb2xsJTIwaHVtYW58ZW58MHx8fHwxNzY2OTI3MzI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "payroll human"
+    },
+    {
+      "id": "22",
+      "description": "Phone Link",
+      "imageUrl": "https://images.unsplash.com/photo-1730818027577-49ebf4f3d832?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwY29ubmVjdHxlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartphone connect"
+    },
+    {
+      "id": "23",
+      "description": "Power Automate",
+      "imageUrl": "https://images.unsplash.com/photo-1760917678680-dd0481e426f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aW9uJTIwZmxvd3xlbnwwfHx8fDE3NjY5MjczMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "automation flow"
+    }
+  ]
 }
