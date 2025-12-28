@@ -10,13 +10,6 @@
  * - /dashboardLinks/{dashboardLinkId}: A collection of link documents.
  * - /users/{uid}: Stores public user profile information.
  * - /internal/seedMarker: A document to track if initial data has been seeded.
- *
- * Key Security Decisions:
- * - Admin Supremacy: Users in `/roles_admin` can manage all data.
- * - One-Time Seeding: Any authenticated user can perform the initial data seed if it hasn't been done.
- * - User Self-Management: Authenticated users can create and update their own
- *   profile document in the `/users` collection, but cannot edit others'.
- * - Read-Only for Public Data: Regular authenticated users can read dashboard links.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -32,15 +25,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Check if a document for the user exists in the admin roles collection.
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      // The ADMIN_EMAIL is configured in the app's constants.
+      // This rule grants admin rights to that specific user.
+      return request.auth.token.email == "stephen@hellotractor.com";
     }
     
-    // This function checks if the database has been seeded before.
-    function isSeeding() {
-        return !exists(/databases/$(database)/documents/internal/seedMarker);
-    }
-
     match /roles_admin/{uid} {
       allow read, write: if isAdmin();
     }
@@ -64,9 +53,6 @@ service cloud.firestore {
      * @description Manages access to user profile documents. Users can create and
      *              update their own profile, while admins can manage any profile.
      * @path /users/{uid}
-     * @allow An authenticated user (e.g., auth.uid = 'user_abc') creating their own profile ((create) /users/user_abc).
-     * @deny A user trying to read or write another user's profile.
-     * @principle Enables user self-service for profile management while maintaining privacy.
      */
     match /users/{uid} {
        allow read, create, update: if isSignedIn() && isOwner(uid);

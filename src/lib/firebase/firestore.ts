@@ -11,7 +11,6 @@ import {
   deleteDoc,
   Firestore,
   getDoc,
-  setDoc,
 } from 'firebase/firestore';
 import type { DashboardLink } from '@/lib/types';
 import { seedData } from '@/lib/data';
@@ -21,13 +20,13 @@ export async function seedInitialData(db: Firestore, force: boolean = false) {
     const seedMarkerRef = doc(db, 'internal', 'seedMarker');
     const seedMarkerSnap = await getDoc(seedMarkerRef);
 
-    // If data has been seeded and updated with images, do nothing unless forced.
-    if (!force && seedMarkerSnap.exists() && seedMarkerSnap.data().updatedWithImages) {
-        console.log('All links are up-to-date, skipping seed.');
+    // If data has been seeded and we are not forcing, do nothing.
+    if (!force && seedMarkerSnap.exists()) {
+        console.log('Database already seeded. Use force to re-seed.');
         return;
     }
 
-    console.log(force ? 'Forcing database re-seed...' : 'Links are missing or outdated. Seeding database...');
+    console.log(force ? 'Forcing database re-seed...' : 'Seeding database...');
 
     const linksCollectionRef = collection(db, 'dashboardLinks');
     const existingLinksSnap = await getDocs(query(linksCollectionRef));
@@ -39,13 +38,13 @@ export async function seedInitialData(db: Firestore, force: boolean = false) {
         batch.delete(doc.ref);
     });
 
-    // Add all links from the seed data with the correct image info
+    // Add all links from the seed data with the correct image info and order
     seedData.forEach((link, index) => {
         const docRef = doc(linksCollectionRef);
         batch.set(docRef, { ...link, order: index });
     });
 
-    // Mark that seeding and image update process has been completed.
+    // Mark that seeding has been completed.
     batch.set(seedMarkerRef, { seeded: true, updatedWithImages: true }, { merge: true });
 
     await batch.commit();
