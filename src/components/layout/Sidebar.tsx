@@ -21,6 +21,7 @@ import { collection, query, orderBy, where } from "firebase/firestore";
 import { useMemo } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
@@ -85,18 +86,17 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
             return (
               <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
                  <SidebarMenuItem>
-                    <AccordionTrigger asChild>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            tooltip={{ children: section.name }}
-                            className="w-full"
-                        >
-                            <Link href={`/${section.slug}`}>
-                                <Icon />
-                                <span>{section.name}</span>
-                            </Link>
-                        </SidebarMenuButton>
+                    <AccordionTrigger 
+                      className={cn(
+                        "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
+                        isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
+                        isCollapsed ? "!size-8 !p-2 justify-center" : "",
+                      )}
+                    >
+                        <Link href={`/${section.slug}`} className="flex flex-1 items-center gap-2" onClick={(e) => isCollapsed && e.preventDefault()}>
+                            <Icon className="h-4 w-4 shrink-0" />
+                            <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
+                        </Link>
                     </AccordionTrigger>
                  </SidebarMenuItem>
                  {!isCollapsed && (
