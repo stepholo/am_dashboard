@@ -1,31 +1,34 @@
+
+"use client";
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import { SECTIONS } from "@/lib/constants";
-import { notFound } from "next/navigation";
+import { usePathname } from 'next/navigation';
+import { Suspense } from "react";
 
-export default function SectionPage({ 
-    params,
-    searchParams 
-}: { 
-    params: { section: string };
-    searchParams?: { linkId?: string };
-}) {
-  const sectionInfo = SECTIONS.find(s => s.slug === params.section);
+function SectionPageContent() {
+  const pathname = usePathname();
+  const sectionSlug = pathname.split('/')[1];
+
+  const sectionInfo = SECTIONS.find(s => s.slug === sectionSlug);
 
   if (!sectionInfo) {
-    notFound();
+    // This can be a notFound() call or a loading/error state
+    return <div>Section not found</div>;
   }
 
   return (
     <DashboardClient 
-        sectionSlug={params.section} 
+        sectionSlug={sectionSlug} 
         sectionName={sectionInfo.name} 
-        initialLinkId={searchParams?.linkId}
     />
   );
 }
 
-export function generateStaticParams() {
-    return SECTIONS.map(section => ({
-        section: section.slug
-    }))
+
+export default function SectionPage() {
+  return (
+    <Suspense fallback={<p>Loading section...</p>}>
+      <SectionPageContent />
+    </Suspense>
+  );
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -16,7 +17,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, ExternalLink, Pencil, Trash2, LayoutDashboard, Rows } from 'lucide-react';
+import { MoreVertical, ExternalLink, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
 import type { DashboardLink } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
@@ -30,11 +31,11 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
   const { user } = useAuth();
   const { toast } = useToast();
   const db = useFirestore();
-  const { openInSinglePane, openInSplitPane } = useDashboard();
+  const { openInDashboard } = useDashboard();
 
   const handleOpen = () => {
     if (link.type === 'embed') {
-      openInSinglePane(link.url, link.name);
+      openInDashboard({ id: link.id, url: link.url, name: link.name });
     } else if (link.type === 'protocol') {
         window.location.href = link.url;
     } else {
@@ -87,13 +88,9 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
             <DropdownMenuContent align="end">
                  {link.type === 'embed' && (
                   <>
-                    <DropdownMenuItem onClick={() => openInSinglePane(link.url, link.name)}>
+                    <DropdownMenuItem onClick={() => openInDashboard({ id: link.id, url: link.url, name: link.name })}>
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Open in Dashboard</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openInSplitPane(link.url, link.name)}>
-                      <Rows className="mr-2 h-4 w-4" />
-                      <span>Open in Split Screen</span>
                     </DropdownMenuItem>
                   </>
                 )}

@@ -1,28 +1,20 @@
+
 "use client";
 
-import { useDashboard } from '@/hooks/useDashboard';
+import { Suspense } from 'react';
+import { useDashboard, PaneContent } from '@/hooks/useDashboard';
 import { Button } from '../ui/button';
-import { X, ArrowLeft, ExternalLink, Replace } from 'lucide-react';
+import { X, ArrowLeft, ExternalLink, Minimize, Maximize } from 'lucide-react';
 import EmptyState from './EmptyState';
 import { Card } from '../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-function IframePane({ url, name, onclose }: { url: string; name: string; onclose: () => void }) {
+function IframePane({ url, name }: { url: string; name: string;}) {
     // Google Sheets URLs with `rm=minimal` hide the toolbar. We want the full UI.
-    const iframeUrl = url.replace('?rm=minimal', '');
+    const iframeUrl = url.includes('docs.google.com') ? url.replace('rm=minimal', 'ui=false&amp;embedded=true') : url;
     
     return (
-        <Card className="flex flex-1 flex-col overflow-hidden">
-             <div className="flex h-12 items-center justify-between border-b bg-muted/50 px-3">
-                <p className="font-medium text-sm truncate">{name}</p>
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(iframeUrl, '_blank')}>
-                        <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onclose}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+        <Card className="flex flex-1 flex-col overflow-hidden border-0 rounded-none">
             <iframe
                 key={iframeUrl} // Re-renders iframe when URL changes
                 src={iframeUrl}
@@ -33,39 +25,84 @@ function IframePane({ url, name, onclose }: { url: string; name: string; onclose
     )
 }
 
-export default function ContentView() {
-  const { viewMode, pane1, pane2, showGrid, swapPanes, closePane } = useDashboard();
+function ContentViewComponent() {
+  const { 
+    viewMode,
+    isFullScreen,
+    openPanes,
+    activePaneId,
+    showGrid,
+    closePane,
+    setActivePane,
+    toggleFullScreen,
+  } = useDashboard();
   
   if (viewMode === 'grid') return null;
 
+  const activePane = openPanes.find(p => p.id === activePaneId);
+
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col gap-4">
+    <div className="flex h-full flex-1 flex-col gap-4">
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={showGrid}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Links
         </Button>
-        {viewMode === 'split' && (
-            <Button variant="outline" size="sm" onClick={swapPanes}>
-                <Replace className="mr-2 h-4 w-4" />
-                Swap
+        <Button variant="outline" size="sm" onClick={toggleFullScreen}>
+            {isFullScreen ? <Minimize className="mr-2 h-4 w-4" /> : <Maximize className="mr-2 h-4 w-4" />}
+            {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
+        </Button>
+        {activePane && (
+            <Button variant="outline" size="sm" onClick={() => window.open(activePane.url, '_blank')}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open in New Tab
             </Button>
         )}
       </div>
-      <div className="flex flex-1 gap-4">
-        {pane1 ? (
-            <IframePane url={pane1.url} name={pane1.name} onclose={() => closePane('pane1')} />
-        ) : (
-            viewMode === 'split' && <EmptyState message="Click a spreadsheet link to open it here." />
-        )}
-        {viewMode === 'split' && (
-            pane2 ? (
-                <IframePane url={pane2.url} name={pane2.name} onclose={() => closePane('pane2')} />
-            ) : (
-                <EmptyState message="Click another spreadsheet link to open it here." />
-            )
-        )}
-      </div>
+      
+      {openPanes.length > 0 ? (
+        <Tabs value={activePaneId || ''} onValueChange={setActivePane} className="flex flex-1 flex-col">
+            <TabsList className="w-full justify-start rounded-none bg-transparent p-0 border-b">
+                {openPanes.map((pane) => (
+                <TabsTrigger 
+                    key={pane.id} 
+                    value={pane.id}
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-2 text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                >
+                    {pane.name}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1.5 h-6 w-6"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            closePane(pane.id);
+                        }}
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </TabsTrigger>
+                ))}
+            </TabsList>
+            {openPanes.map((pane) => (
+                <TabsContent key={pane.id} value={pane.id} className="flex-1 mt-0">
+                   <IframePane url={pane.url} name={pane.name} />
+                </TabsContent>
+            ))}
+        </Tabs>
+      ) : (
+        <EmptyState message="Click a link to open it in the dashboard." />
+      )}
     </div>
   );
+}
+
+
+export default function ContentView() {
+  return (
+    // The Suspense boundary is important for when the context is initialized from search params
+    <Suspense fallback={<div>Loading dashboard view...</div>}>
+      <ContentViewComponent />
+    </Suspense>
+  )
 }

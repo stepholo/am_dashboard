@@ -1,79 +1,145 @@
+
 "use client";
 
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-type PaneContent = {
+export type PaneContent = {
+  id: string; // Unique ID, can be the link ID
   url: string;
   name: string;
-} | null;
+};
 
-type ViewMode = 'grid' | 'single' | 'split';
+type ViewMode = 'grid' | 'dashboard';
 
 interface DashboardContextType {
   viewMode: ViewMode;
-  pane1: PaneContent;
-  pane2: PaneContent;
-  openInSinglePane: (url: string, name: string) => void;
-  openInSplitPane: (url: string, name: string) => void;
-  swapPanes: () => void;
-  closePane: (pane: 'pane1' | 'pane2') => void;
+  isFullScreen: boolean;
+  openPanes: PaneContent[];
+  activePaneId: string | null;
+  
+  openInDashboard: (pane: PaneContent) => void;
   showGrid: () => void;
+  closePane: (paneId: string) => void;
+  setActivePane: (paneId: string) => void;
+  
+  toggleFullScreen: () => void;
 }
 
 export const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export const DashboardProvider = ({ children }: { children: React.ReactNode }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [pane1, setPane1] = useState<PaneContent>(null);
-  const [pane2, setPane2] = useState<PaneContent>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const openInSinglePane = useCallback((url: string, name: string) => {
-    setPane1({ url, name });
-    setPane2(null);
-    setViewMode('single');
-  }, []);
-
-  const openInSplitPane = useCallback((url: string, name: string) => {
-    if (!pane1) {
-        setPane1({ url, name });
-    } else {
-        setPane2({ url, name });
+  // Initialize state from URL or default
+  const getInitialState = () => {
+    const view = searchParams.get('view') as ViewMode | null;
+    const panesString = searchParams.get('panes');
+    const activeId = searchParams.get('active');
+    
+    let openPanes: PaneContent[] = [];
+    if (panesString) {
+      try {
+        openPanes = JSON.parse(decodeURIComponent(panesString));
+      } catch (e) {
+        console.error("Failed to parse panes from URL", e);
+      }
     }
-    setViewMode('split');
-  }, [pane1]);
-  
-  const swapPanes = useCallback(() => {
-    setPane1(pane2);
-    setPane2(pane1);
-  }, [pane1, pane2]);
+    
+    return {
+      viewMode: view === 'dashboard' ? 'dashboard' : 'grid',
+      openPanes,
+      activePaneId: activeId ?? (openPanes.length > 0 ? openPanes[0].id : null),
+    };
+  };
 
-  const closePane = useCallback((pane: 'pane1' | 'pane2') => {
-    if (pane === 'pane1') {
-      setPane1(pane2);
-      setPane2(null);
-      if (!pane2) setViewMode('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialState().viewMode);
+  const [openPanes, setOpenPanes] = useState<PaneContent[]>(getInitialState().openPanes);
+  const [activePaneId, setActivePaneId] = useState<string | null>(getInitialState().activePaneId);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const updateUrl = (newView: ViewMode, newPanes: PaneContent[], newActiveId: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newView === 'grid' || newPanes.length === 0) {
+      params.delete('view');
+      params.delete('panes');
+      params.delete('active');
     } else {
-      setPane2(null);
-      if (!pane1) setViewMode('grid');
+      params.set('view', 'dashboard');
+      params.set('panes', encodeURIComponent(JSON.stringify(newPanes)));
+      if (newActiveId) {
+        params.set('active', newActiveId);
+      } else {
+        params.delete('active');
+      }
     }
-  }, [pane1, pane2]);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
   
+  const openInDashboard = useCallback((pane: PaneContent) => {
+    let newPanes = [...openPanes];
+    const existingPaneIndex = newPanes.findIndex(p => p.id === pane.id);
+
+    if (existingPaneIndex === -1) {
+      newPanes = [...newPanes, pane];
+    }
+    
+    setOpenPanes(newPanes);
+    setActivePaneId(pane.id);
+    setViewMode('dashboard');
+    updateUrl('dashboard', newPanes, pane.id);
+  }, [openPanes, router, pathname]);
+
   const showGrid = useCallback(() => {
     setViewMode('grid');
-    setPane1(null);
-    setPane2(null);
+    updateUrl('grid', [], null);
+  }, [router, pathname]);
+  
+  const closePane = useCallback((paneId: string) => {
+    const newPanes = openPanes.filter(p => p.id !== paneId);
+    setOpenPanes(newPanes);
+
+    if (newPanes.length === 0) {
+      showGrid();
+    } else if (activePaneId === paneId) {
+      const newActiveId = newPanes[newPanes.length - 1].id;
+      setActivePaneId(newActiveId);
+      updateUrl('dashboard', newPanes, newActiveId);
+    } else {
+      updateUrl('dashboard', newPanes, activePaneId);
+    }
+  }, [openPanes, activePaneId, showGrid]);
+  
+  const setActivePane = useCallback((paneId: string) => {
+    setActivePaneId(paneId);
+    updateUrl('dashboard', openPanes, paneId);
+  }, [openPanes, router, pathname]);
+
+  const toggleFullScreen = useCallback(() => {
+    setIsFullScreen(prev => !prev);
   }, []);
 
-  const value = {
+  // Update state if URL changes from external navigation (e.g. back/forward buttons)
+  useEffect(() => {
+    const stateFromUrl = getInitialState();
+    setViewMode(stateFromUrl.viewMode);
+    setOpenPanes(stateFromUrl.openPanes);
+    setActivePaneId(stateFromUrl.activePaneId);
+  }, [searchParams]);
+
+  const value = useMemo(() => ({
     viewMode,
-    pane1,
-    pane2,
-    openInSinglePane,
-    openInSplitPane,
-    swapPanes,
-    closePane,
+    isFullScreen,
+    openPanes,
+    activePaneId,
+    openInDashboard,
     showGrid,
-  };
+    closePane,
+    setActivePane,
+    toggleFullScreen,
+  }), [viewMode, isFullScreen, openPanes, activePaneId, openInDashboard, showGrid, closePane, setActivePane, toggleFullScreen]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 };

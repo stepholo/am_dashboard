@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useContext } from 'react';
-import { DashboardContext } from '@/context/DashboardContext';
+import { DashboardContext, PaneContent } from '@/context/DashboardContext';
 
 export const useDashboard = () => {
   const context = useContext(DashboardContext);
@@ -10,3 +11,5 @@ export const useDashboard = () => {
   }
   return context;
 };
+
+export type { PaneContent };

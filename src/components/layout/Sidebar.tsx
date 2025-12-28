@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -20,9 +21,12 @@ import { collection, query, orderBy, where } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDashboard } from "@/hooks/useDashboard";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
+    const { openInDashboard } = useDashboard();
+
     const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
         return query(collection(db, 'dashboardLinks'), where('section', '==', sectionSlug), orderBy('order'));
@@ -37,19 +41,29 @@ function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string
             </div>
         )
     }
+    
+    const handleLinkOpen = (link: DashboardLink) => {
+        if (link.type === 'embed') {
+            openInDashboard({ id: link.id, name: link.name, url: link.url });
+        } else if (link.type === 'protocol') {
+            window.location.href = link.url;
+        } else {
+            window.open(link.url, '_blank');
+        }
+        onLinkClick();
+    }
 
     return (
         <div className="flex flex-col gap-1 py-1">
             {links?.map(link => (
-                <Link 
-                    href={`/${sectionSlug}?linkId=${link.id}`} 
+                <button 
                     key={link.id} 
-                    className="group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    onClick={onLinkClick}
+                    className="group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left"
+                    onClick={() => handleLinkOpen(link)}
                 >
                     <ChevronsRight className="h-4 w-4 flex-shrink-0 text-sidebar-accent-foreground/50 transition-transform group-hover:translate-x-1" />
                     <span className="truncate">{link.name}</span>
-                </Link>
+                </button>
             ))}
         </div>
     )
@@ -58,12 +72,15 @@ function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const { state, setOpenMobile } = useSidebar();
+  const { isFullScreen } = useDashboard();
   const isCollapsed = state === 'collapsed';
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
     setOpenMobile(false);
   }
+
+  if (isFullScreen) return null;
 
   return (
     <Sidebar>
@@ -91,10 +108,10 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
                         isCollapsed ? "!size-8 !p-2 justify-center" : "",
                       )}
                     >
-                        <Link href={`/${section.slug}`} className="flex flex-1 items-center gap-2" onClick={(e) => { handleLinkClick(); if (isCollapsed) e.preventDefault(); }}>
+                        <div onClick={(e) => { if(!isCollapsed) { e.preventDefault(); e.stopPropagation(); } }} className="flex flex-1 items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
-                        </Link>
+                        </div>
                     </AccordionTrigger>
                  </SidebarMenuItem>
                  {!isCollapsed && (
