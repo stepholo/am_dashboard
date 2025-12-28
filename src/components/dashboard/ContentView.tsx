@@ -7,12 +7,15 @@ import EmptyState from './EmptyState';
 import { Card } from '../ui/card';
 
 function IframePane({ url, name, onclose }: { url: string; name: string; onclose: () => void }) {
+    // Google Sheets URLs with `rm=minimal` hide the toolbar. We want the full UI.
+    const iframeUrl = url.replace('?rm=minimal', '');
+    
     return (
         <Card className="flex flex-1 flex-col overflow-hidden">
              <div className="flex h-12 items-center justify-between border-b bg-muted/50 px-3">
                 <p className="font-medium text-sm truncate">{name}</p>
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(url, '_blank')}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(iframeUrl, '_blank')}>
                         <ExternalLink className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onclose}>
@@ -21,8 +24,8 @@ function IframePane({ url, name, onclose }: { url: string; name: string; onclose
                 </div>
             </div>
             <iframe
-                key={url} // Re-renders iframe when URL changes
-                src={url}
+                key={iframeUrl} // Re-renders iframe when URL changes
+                src={iframeUrl}
                 className="h-full w-full border-0"
                 allow="clipboard-write"
             />
