@@ -7,18 +7,17 @@ import LinkCard from './LinkCard';
 import { Skeleton } from '../ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { DashboardProvider } from '@/context/DashboardContext';
 import ContentView from './ContentView';
 import { useDashboard } from '@/hooks/useDashboard';
 import { collection, query, where, orderBy } from 'firebase/firestore';
-import { useMemo } from 'react';
 
 function DashboardGrid({ sectionSlug, sectionName, initialLinkId }: { sectionSlug: string; sectionName: string; initialLinkId?: string; }) {
   const { user } = useAuth();
   const db = useFirestore();
   
-  const linksQuery = useMemo(() => {
+  const linksQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'dashboardLinks'), where('section', '==', sectionSlug), orderBy('order', 'asc'));
   }, [db, sectionSlug]);

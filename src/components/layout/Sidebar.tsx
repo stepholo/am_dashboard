@@ -7,7 +7,6 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -16,16 +15,15 @@ import { SECTIONS } from "@/lib/constants";
 import UserNav from "./UserNav";
 import type { UserProfile, DashboardLink } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { useFirestore, useCollection } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, where } from "firebase/firestore";
-import { useMemo } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
-    const linksQuery = useMemo(() => {
+    const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
         return query(collection(db, 'dashboardLinks'), where('section', '==', sectionSlug), orderBy('order'));
     }, [db, sectionSlug]);
@@ -93,7 +91,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
                         isCollapsed ? "!size-8 !p-2 justify-center" : "",
                       )}
                     >
-                        <Link href={`/${section.slug}`} className="flex flex-1 items-center gap-2" onClick={(e) => isCollapsed && e.preventDefault()}>
+                        <Link href={`/${section.slug}`} className="flex flex-1 items-center gap-2" onClick={(e) => { handleLinkClick(); if (isCollapsed) e.preventDefault(); }}>
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
                         </Link>
