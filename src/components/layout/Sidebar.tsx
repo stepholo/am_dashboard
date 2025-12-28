@@ -72,15 +72,12 @@ function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const { state, setOpenMobile } = useSidebar();
-  const { isFullScreen } = useDashboard();
   const isCollapsed = state === 'collapsed';
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
     setOpenMobile(false);
   }
-
-  if (isFullScreen) return null;
 
   return (
     <Sidebar>

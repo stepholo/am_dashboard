@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import AppSidebar from '@/components/layout/Sidebar';
@@ -9,18 +9,6 @@ import Header from '@/components/layout/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import Logo from '@/components/Logo';
 import { DashboardProvider } from '@/context/DashboardContext';
-import { useDashboard } from '@/hooks/useDashboard';
-import { cn } from '@/lib/utils';
-
-function DashboardMainContent({ children }: { children: React.ReactNode }) {
-    const { isFullScreen } = useDashboard();
-    return (
-        <div className={cn("flex flex-1 flex-col", isFullScreen ? "h-screen" : "")}>
-            <Header />
-            <main className="flex-1 p-4 sm:p-6 flex flex-col">{children}</main>
-        </div>
-    );
-}
 
 export default function DashboardLayout({
   children,
@@ -54,9 +42,10 @@ export default function DashboardLayout({
           <SidebarProvider>
               <AppSidebar user={user} />
               <SidebarInset>
-                <DashboardMainContent>
-                    {children}
-                </DashboardMainContent>
+                <div className="flex flex-1 flex-col">
+                  <Header />
+                  <main className="flex-1 p-4 sm:p-6 flex flex-col">{children}</main>
+                </div>
               </SidebarInset>
           </SidebarProvider>
       </DashboardProvider>

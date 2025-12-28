@@ -14,7 +14,6 @@ type ViewMode = 'grid' | 'dashboard';
 
 interface DashboardContextType {
   viewMode: ViewMode;
-  isFullScreen: boolean;
   openPanes: PaneContent[];
   activePaneId: string | null;
   
@@ -22,8 +21,6 @@ interface DashboardContextType {
   showGrid: () => void;
   closePane: (paneId: string) => void;
   setActivePane: (paneId: string) => void;
-  
-  toggleFullScreen: () => void;
 }
 
 export const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -58,7 +55,6 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialState().viewMode);
   const [openPanes, setOpenPanes] = useState<PaneContent[]>(getInitialState().openPanes);
   const [activePaneId, setActivePaneId] = useState<string | null>(getInitialState().activePaneId);
-  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const updateUrl = (newView: ViewMode, newPanes: PaneContent[], newActiveId: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -117,10 +113,6 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
     updateUrl('dashboard', openPanes, paneId);
   }, [openPanes, router, pathname]);
 
-  const toggleFullScreen = useCallback(() => {
-    setIsFullScreen(prev => !prev);
-  }, []);
-
   // Update state if URL changes from external navigation (e.g. back/forward buttons)
   useEffect(() => {
     const stateFromUrl = getInitialState();
@@ -131,15 +123,13 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
 
   const value = useMemo(() => ({
     viewMode,
-    isFullScreen,
     openPanes,
     activePaneId,
     openInDashboard,
     showGrid,
     closePane,
     setActivePane,
-    toggleFullScreen,
-  }), [viewMode, isFullScreen, openPanes, activePaneId, openInDashboard, showGrid, closePane, setActivePane, toggleFullScreen]);
+  }), [viewMode, openPanes, activePaneId, openInDashboard, showGrid, closePane, setActivePane]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 };

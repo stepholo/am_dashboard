@@ -2,21 +2,20 @@
 "use client";
 
 import { Suspense } from 'react';
-import { useDashboard, PaneContent } from '@/hooks/useDashboard';
+import { useDashboard } from '@/hooks/useDashboard';
 import { Button } from '../ui/button';
-import { X, ArrowLeft, ExternalLink, Minimize, Maximize } from 'lucide-react';
+import { X, ArrowLeft, ExternalLink } from 'lucide-react';
 import EmptyState from './EmptyState';
 import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-function IframePane({ url, name }: { url: string; name: string;}) {
-    // Google Sheets URLs with `rm=minimal` hide the toolbar. We want the full UI.
+function IframePane({ url }: { url: string;}) {
     const iframeUrl = url.includes('docs.google.com') ? url.replace('rm=minimal', 'ui=false&amp;embedded=true') : url;
     
     return (
         <Card className="flex flex-1 flex-col overflow-hidden border-0 rounded-none">
             <iframe
-                key={iframeUrl} // Re-renders iframe when URL changes
+                key={iframeUrl} 
                 src={iframeUrl}
                 className="h-full w-full border-0"
                 allow="clipboard-write"
@@ -28,13 +27,11 @@ function IframePane({ url, name }: { url: string; name: string;}) {
 function ContentViewComponent() {
   const { 
     viewMode,
-    isFullScreen,
     openPanes,
     activePaneId,
     showGrid,
     closePane,
     setActivePane,
-    toggleFullScreen,
   } = useDashboard();
   
   if (viewMode === 'grid') return null;
@@ -47,10 +44,6 @@ function ContentViewComponent() {
         <Button variant="outline" size="sm" onClick={showGrid}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Links
-        </Button>
-        <Button variant="outline" size="sm" onClick={toggleFullScreen}>
-            {isFullScreen ? <Minimize className="mr-2 h-4 w-4" /> : <Maximize className="mr-2 h-4 w-4" />}
-            {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
         </Button>
         {activePane && (
             <Button variant="outline" size="sm" onClick={() => window.open(activePane.url, '_blank')}>
@@ -86,7 +79,7 @@ function ContentViewComponent() {
             </TabsList>
             {openPanes.map((pane) => (
                 <TabsContent key={pane.id} value={pane.id} className="flex-1 mt-0">
-                   <IframePane url={pane.url} name={pane.name} />
+                   <IframePane url={pane.url} />
                 </TabsContent>
             ))}
         </Tabs>
@@ -100,7 +93,6 @@ function ContentViewComponent() {
 
 export default function ContentView() {
   return (
-    // The Suspense boundary is important for when the context is initialized from search params
     <Suspense fallback={<div>Loading dashboard view...</div>}>
       <ContentViewComponent />
     </Suspense>
