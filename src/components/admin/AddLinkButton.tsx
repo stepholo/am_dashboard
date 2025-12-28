@@ -25,17 +25,17 @@ import { SECTIONS } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import type { DashboardLink } from '@/lib/types';
 import { Plus } from 'lucide-react';
-import { useFirestore } from '@/firebase';
+import { Firestore } from 'firebase/firestore';
 
 interface LinkEditorProps {
+    db: Firestore;
     section?: string;
     linkToEdit?: DashboardLink | null;
     onLinkAdded: () => void;
     trigger?: React.ReactNode;
 }
 
-export default function AddLinkButton({ section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
-  const db = useFirestore();
+export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(linkToEdit?.name || '');
   const [url, setUrl] = useState(linkToEdit?.url || '');
@@ -48,6 +48,13 @@ export default function AddLinkButton({ section, linkToEdit = null, onLinkAdded,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!db) {
+      toast({
+        variant: 'destructive',
+        title: 'Database connection not found.',
+      });
+      return;
+    }
     setLoading(true);
 
     try {

@@ -46,6 +46,10 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
   };
 
   const handleDelete = async () => {
+    if (!db) {
+        toast({ variant: 'destructive', title: "Database connection not found." });
+        return;
+    }
     if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
         try {
             await deleteLink(db, link.id);
@@ -100,10 +104,10 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
                 <ExternalLink className="mr-2 h-4 w-4" />
                 <span>Open in New Tab</span>
                 </DropdownMenuItem>
-                {user?.role === 'admin' && (
+                {user?.role === 'admin' && db && (
                     <>
                         <DropdownMenuSeparator />
-                        <AddLinkButton linkToEdit={link} onLinkAdded={onUpdate} trigger={
+                        <AddLinkButton db={db} linkToEdit={link} onLinkAdded={onUpdate} trigger={
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 <span>Edit</span>

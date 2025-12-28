@@ -37,15 +37,13 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
     }
   }, [sectionSlug, db, user, authLoading]);
 
-  if (viewMode !== 'grid') {
-    return <ContentView />;
-  }
-
   return (
     <div className="flex flex-col gap-6">
+      {viewMode !== 'grid' && <ContentView />}
+      
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight font-headline">{sectionName}</h1>
-        {user?.role === 'admin' && <AddLinkButton section={sectionSlug} onLinkAdded={fetchLinks} />}
+        {user?.role === 'admin' && db && <AddLinkButton db={db} section={sectionSlug} onLinkAdded={fetchLinks} />}
       </div>
       
       {loading ? (
