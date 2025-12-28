@@ -10,11 +10,10 @@ import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function IframePane({ url }: { url: string;}) {
-    // Restore full Google Sheets UI by removing 'minimal' parameter
     const iframeUrl = url.includes('docs.google.com') ? url.replace(/(&?)(rm=minimal|ui=false&?|embedded=true&?)/g, '') : url;
     
     return (
-        <Card className="flex flex-1 flex-col overflow-hidden border-0 rounded-none">
+        <Card className="flex flex-1 flex-col overflow-hidden border-0 rounded-none h-full">
             <iframe
                 key={iframeUrl} 
                 src={iframeUrl}
@@ -40,8 +39,8 @@ function ContentViewComponent() {
   const activePane = openPanes.find(p => p.id === activePaneId);
 
   return (
-    <div className="flex h-full flex-1 flex-col gap-4">
-      <div className="flex items-center gap-2">
+    <div className="flex h-full flex-1 flex-col">
+      <div className="flex items-center gap-2 p-4 border-b">
         <Button variant="outline" size="sm" onClick={showGrid}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Links
@@ -55,8 +54,8 @@ function ContentViewComponent() {
       </div>
       
       {openPanes.length > 0 ? (
-        <Tabs value={activePaneId || ''} onValueChange={setActivePane} className="flex flex-1 flex-col">
-            <TabsList className="w-full justify-start rounded-none bg-transparent p-0 border-b">
+        <Tabs value={activePaneId || ''} onValueChange={setActivePane} className="flex flex-1 flex-col bg-muted/30">
+            <TabsList className="w-full justify-start rounded-none bg-transparent p-0 border-b pl-4">
                 {openPanes.map((pane) => (
                 <div key={pane.id} className="relative">
                     <TabsTrigger
@@ -86,7 +85,9 @@ function ContentViewComponent() {
             ))}
         </Tabs>
       ) : (
-        <EmptyState message="Click a link to open it in the dashboard." />
+        <div className="flex flex-1 p-4">
+            <EmptyState message="Click a link to open it in the dashboard." />
+        </div>
       )}
     </div>
   );
