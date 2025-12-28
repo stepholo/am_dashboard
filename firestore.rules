@@ -1,16 +1,3 @@
-/**
- * Core Philosophy: This ruleset implements a Role-Based Access Control (RBAC) model.
- * A global 'Admin' role grants full write permissions across the database, while
- * general authenticated users are granted read-only access to public data and write
- * access to their own user profile.
- *
- * Data Structure:
- * - /roles_admin/{uid}: A collection where the existence of a document signifies
- *   that the user with the corresponding UID is a global administrator.
- * - /dashboardLinks/{dashboardLinkId}: A collection of link documents.
- * - /users/{uid}: Stores public user profile information.
- * - /internal/seedMarker: A document to track if initial data has been seeded.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -25,19 +12,13 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // The ADMIN_EMAIL is configured in the app's constants.
-      // This rule grants admin rights to that specific user.
+      // This rule grants admin rights to the specific user email.
       return request.auth.token.email == "stephen@hellotractor.com";
     }
     
-    match /roles_admin/{uid} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /internal/seedMarker {
-      // Any signed in user can read the marker to see if seeding is needed.
+    // Internal collection for metadata. Only admins can write to it.
+    match /internal/{docId} {
       allow read: if isSignedIn();
-      // Only admins can write to the marker, which happens during seeding.
       allow write: if isAdmin();
     }
 
@@ -45,15 +26,10 @@ service cloud.firestore {
       // Any signed-in user can read the links.
       allow get, list: if isSignedIn();
       
-      // Only Admins can write to dashboard links.
+      // Only Admins can create, update, or delete dashboard links.
       allow write: if isAdmin();
     }
 
-    /**
-     * @description Manages access to user profile documents. Users can create and
-     *              update their own profile, while admins can manage any profile.
-     * @path /users/{uid}
-     */
     match /users/{uid} {
        allow read, create, update: if isSignedIn() && isOwner(uid);
        allow delete: if isAdmin(); // Only admins can delete user profiles

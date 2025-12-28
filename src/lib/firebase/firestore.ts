@@ -15,19 +15,8 @@ import {
 import type { DashboardLink } from '@/lib/types';
 import { seedData } from '@/lib/data';
 
-// Function to seed initial data or update existing data
-export async function seedInitialData(db: Firestore, force: boolean = false) {
-    const seedMarkerRef = doc(db, 'internal', 'seedMarker');
-    const seedMarkerSnap = await getDoc(seedMarkerRef);
-
-    // If data has been seeded and we are not forcing, do nothing.
-    if (!force && seedMarkerSnap.exists()) {
-        console.log('Database already seeded. Use force to re-seed.');
-        return;
-    }
-
-    console.log(force ? 'Forcing database re-seed...' : 'Seeding database...');
-
+// Function to seed initial data. This will delete all existing links.
+export async function seedInitialData(db: Firestore) {
     const linksCollectionRef = collection(db, 'dashboardLinks');
     const existingLinksSnap = await getDocs(query(linksCollectionRef));
 
@@ -43,17 +32,18 @@ export async function seedInitialData(db: Firestore, force: boolean = false) {
         const docRef = doc(linksCollectionRef);
         batch.set(docRef, { ...link, order: index });
     });
-
-    // Mark that seeding has been completed.
-    batch.set(seedMarkerRef, { seeded: true, updatedWithImages: true }, { merge: true });
+    
+    // Set a marker to indicate seeding is done.
+    const seedMarkerRef = doc(db, 'internal', 'seedMarker');
+    batch.set(seedMarkerRef, { seededOn: new Date().toISOString() });
 
     await batch.commit();
-    console.log('Database re-seeding complete.');
+    console.log('Database seeding complete.');
 }
 
 
-// Get all links for a specific section
-export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
+// Get all links for a specific section, and seed if empty
+export async function getLinksForSection(db: Firestore, section: string, isAdmin: boolean): Promise<DashboardLink[]> {
   const linksCollection = collection(db, 'dashboardLinks');
   
   const q = query(
@@ -61,7 +51,23 @@ export async function getLinksForSection(db: Firestore, section: string): Promis
     where('section', '==', section),
     orderBy('order', 'asc')
   );
+  
   const snapshot = await getDocs(q);
+
+  // If the section is empty and the user is an admin, it's likely the DB hasn't been seeded.
+  if (snapshot.empty && isAdmin) {
+    const internalCollection = collection(db, 'internal');
+    const seedMarkerSnap = await getDoc(doc(internalCollection, 'seedMarker'));
+    
+    if (!seedMarkerSnap.exists()) {
+        console.log("No links found and not seeded, seeding database now...");
+        await seedInitialData(db);
+        // Re-fetch the links after seeding
+        const seededSnapshot = await getDocs(q);
+        return seededSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DashboardLink));
+    }
+  }
+  
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DashboardLink));
 }
 

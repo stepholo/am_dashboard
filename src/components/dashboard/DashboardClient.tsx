@@ -13,22 +13,29 @@ import { useFirestore } from '@/firebase';
 
 export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string }) {
   const { viewMode } = useDashboard();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const db = useFirestore();
   const [links, setLinks] = useState<DashboardLink[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLinks = async () => {
-    if (!db) return;
+    if (!db || !user) return;
     setLoading(true);
-    const fetchedLinks = await getLinksForSection(db, sectionSlug);
+    // Pass the user's admin status to the function
+    const fetchedLinks = await getLinksForSection(db, sectionSlug, user.role === 'admin');
     setLinks(fetchedLinks);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchLinks();
-  }, [sectionSlug, db]);
+    // Only fetch links once the user's auth state is determined
+    if (!authLoading && user) {
+        fetchLinks();
+    } else if (!authLoading && !user) {
+        // If user is not logged in and we're done checking, stop loading.
+        setLoading(false);
+    }
+  }, [sectionSlug, db, user, authLoading]);
 
   if (viewMode !== 'grid') {
     return <ContentView />;
