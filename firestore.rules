@@ -1,77 +1,58 @@
 /**
  * Core Philosophy: This ruleset implements a Role-Based Access Control (RBAC) model.
  * A global 'Admin' role grants full write permissions across the database, while
- * general authenticated users are granted read-only access to public data. This
- * model is designed to be secure and easy to manage.
+ * general authenticated users are granted read-only access to public data and write
+ * access to their own user profile.
  *
  * Data Structure:
  * - /roles_admin/{uid}: A collection where the existence of a document signifies
- *   that the user with the corresponding UID is a global administrator. This is used
- *   as a fast, efficient lookup for admin status.
- * - /dashboardLinks/{dashboardLinkId}: A collection of link documents intended for
- *   display in a central dashboard.
+ *   that the user with the corresponding UID is a global administrator.
+ * - /dashboardLinks/{dashboardLinkId}: A collection of link documents.
+ * - /users/{uid}: Stores public user profile information.
  *
  * Key Security Decisions:
- * - Admin Supremacy: Users designated as admins in the `/roles_admin` collection
- *   have the authority to create, update, and delete all data.
- * - Read-Only for Users: Regular authenticated users can read dashboard links but
- *   cannot modify them. This allows the application to display information widely
- *   while centralizing content management with admins.
- * - No Anonymous Access: Unauthenticated users are denied all access to the database.
- * - Denormalization for Authorization: Admin status is checked via a direct document
- *   lookup (`exists()`) in `/roles_admin`, which is highly performant and avoids
- *   complex, slow, or impossible queries within rules.
+ * - Admin Supremacy: Users in `/roles_admin` can manage all data.
+ * - User Self-Management: Authenticated users can create and update their own
+ *   profile document in the `/users` collection, but cannot edit others'.
+ * - Read-Only for Public Data: Regular authenticated users can read dashboard links.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper functions for readable, reusable logic.
-
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user has an admin role document.
-     * This is the single source of truth for administrative privileges.
-     */
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
     function isAdmin() {
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    /**
-     * @description Controls who can view and manage the list of global administrators.
-     * @path /roles_admin/{uid}
-     * @allow An existing admin (e.g., auth.uid = 'admin_abc') creating a new admin document ((create) /roles_admin/new_admin_xyz).
-     * @deny A non-admin user (e.g., auth.uid = 'user_xyz') trying to list all admins ((list) /roles_admin).
-     * @principle Secures the admin role mechanism, ensuring only existing admins can manage the list of administrators.
-     */
     match /roles_admin/{uid} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read, write: if isAdmin();
+    }
+
+    match /dashboardLinks/{dashboardLinkId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Manages access to dashboard link documents. Admins have full create, update, and
-     *              delete permissions, while any authenticated user can read the links.
-     * @path /dashboardLinks/{dashboardLinkId}
-     * @allow An authenticated user (auth != null) reading a link ((get) /dashboardLinks/link_123).
-     * @deny A non-admin authenticated user trying to create a new link ((create) /dashboardLinks/link_456).
-     * @principle Implements a global admin write-lock while allowing read access for authenticated users to support the UI.
+     * @description Manages access to user profile documents. Users can create and
+     *              update their own profile, while admins can manage any profile.
+     * @path /users/{uid}
+     * @allow An authenticated user (e.g., auth.uid = 'user_abc') creating their own profile ((create) /users/user_abc).
+     * @deny A user trying to read or write another user's profile.
+     * @principle Enables user self-service for profile management while maintaining privacy.
      */
-    match /dashboardLinks/{dashboardLinkId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+    match /users/{uid} {
+       allow read, create, update: if isSignedIn() && isOwner(uid);
+       allow delete: if isAdmin(); // Only admins can delete user profiles
     }
   }
 }
