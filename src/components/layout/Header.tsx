@@ -6,16 +6,22 @@ import { Button } from "../ui/button";
 import { seedInitialData } from "@/lib/firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { Database } from "lucide-react";
+import { Database, Loader } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import { useState } from "react";
 
 function AdminControls() {
     const db = useFirestore();
     const { toast } = useToast();
+    const [isSeeding, setIsSeeding] = useState(false);
 
     const handleSeed = async () => {
-        if (!db) return;
+        if (!db) {
+            toast({ variant: "destructive", title: "Seeding failed", description: "Database not available." });
+            return;
+        };
         if (window.confirm("Are you sure you want to re-seed the database? This will delete and recreate all links.")) {
+            setIsSeeding(true);
             try {
                 await seedInitialData(db, true); // force re-seed
                 toast({ title: "Database seeded successfully!" });
@@ -23,14 +29,16 @@ function AdminControls() {
             } catch (error) {
                 console.error("Seeding failed:", error);
                 toast({ variant: "destructive", title: "Seeding failed", description: (error as Error).message });
+            } finally {
+                setIsSeeding(false);
             }
         }
     }
 
     return (
-        <Button size="sm" variant="outline" onClick={handleSeed}>
-            <Database className="mr-2 h-4 w-4" />
-            Seed Data
+        <Button size="sm" variant="outline" onClick={handleSeed} disabled={isSeeding}>
+            {isSeeding ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+            {isSeeding ? "Seeding..." : "Seed Data"}
         </Button>
     )
 }
