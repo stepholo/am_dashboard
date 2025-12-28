@@ -1,17 +1,77 @@
+/**
+ * Core Philosophy: This ruleset implements a Role-Based Access Control (RBAC) model.
+ * A global 'Admin' role grants full write permissions across the database, while
+ * general authenticated users are granted read-only access to public data. This
+ * model is designed to be secure and easy to manage.
+ *
+ * Data Structure:
+ * - /roles_admin/{uid}: A collection where the existence of a document signifies
+ *   that the user with the corresponding UID is a global administrator. This is used
+ *   as a fast, efficient lookup for admin status.
+ * - /dashboardLinks/{dashboardLinkId}: A collection of link documents intended for
+ *   display in a central dashboard.
+ *
+ * Key Security Decisions:
+ * - Admin Supremacy: Users designated as admins in the `/roles_admin` collection
+ *   have the authority to create, update, and delete all data.
+ * - Read-Only for Users: Regular authenticated users can read dashboard links but
+ *   cannot modify them. This allows the application to display information widely
+ *   while centralizing content management with admins.
+ * - No Anonymous Access: Unauthenticated users are denied all access to the database.
+ * - Denormalization for Authorization: Admin status is checked via a direct document
+ *   lookup (`exists()`) in `/roles_admin`, which is highly performant and avoids
+ *   complex, slow, or impossible queries within rules.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read their own user document
-    match /users/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow create: if request.auth != null;
+
+    // Helper functions for readable, reusable logic.
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Links can be read by any authenticated user, but only written by admins.
-    match /links/{linkId} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    /**
+     * Checks if the currently authenticated user has an admin role document.
+     * This is the single source of truth for administrative privileges.
+     */
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * @description Controls who can view and manage the list of global administrators.
+     * @path /roles_admin/{uid}
+     * @allow An existing admin (e.g., auth.uid = 'admin_abc') creating a new admin document ((create) /roles_admin/new_admin_xyz).
+     * @deny A non-admin user (e.g., auth.uid = 'user_xyz') trying to list all admins ((list) /roles_admin).
+     * @principle Secures the admin role mechanism, ensuring only existing admins can manage the list of administrators.
+     */
+    match /roles_admin/{uid} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Manages access to dashboard link documents. Admins have full create, update, and
+     *              delete permissions, while any authenticated user can read the links.
+     * @path /dashboardLinks/{dashboardLinkId}
+     * @allow An authenticated user (auth != null) reading a link ((get) /dashboardLinks/link_123).
+     * @deny A non-admin authenticated user trying to create a new link ((create) /dashboardLinks/link_456).
+     * @principle Implements a global admin write-lock while allowing read access for authenticated users to support the UI.
+     */
+    match /dashboardLinks/{dashboardLinkId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }

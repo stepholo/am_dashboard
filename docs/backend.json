@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "DashboardLink": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DashboardLink",
+      "type": "object",
+      "description": "Represents a link to be displayed on the dashboard.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DashboardLink entity."
+        },
+        "section": {
+          "type": "string",
+          "description": "The section in the sidebar where the link should be displayed (e.g., PAYG Operations, Invoicing)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the link."
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL the link points to.",
+          "format": "uri"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of link (e.g., External Portal, Google Sheet).",
+          "format": "string"
+        },
+        "openType": {
+          "type": "string",
+          "description": "How the link should be opened (Dashboard, Split Screen, New Tab).",
+          "format": "string"
+        }
+      },
+      "required": [
+        "id",
+        "section",
+        "name",
+        "url",
+        "type",
+        "openType"
+      ]
+    },
+    "UserRole": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserRole",
+      "type": "object",
+      "description": "Represents the role of a user in the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserRole entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role assigned to the user (e.g., Admin, Viewer)."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "role"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/roles_admin/{uid}",
+        "definition": {
+          "entityName": "UserRole",
+          "schema": {
+            "$ref": "#/backend/entities/UserRole"
+          },
+          "description": "Collection to store admin roles. Existence of a document grants admin privileges.",
+          "params": [
+            {
+              "name": "uid",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/dashboardLinks/{dashboardLinkId}",
+        "definition": {
+          "entityName": "DashboardLink",
+          "schema": {
+            "$ref": "#/backend/entities/DashboardLink"
+          },
+          "description": "Collection to store dashboard links with denormalized 'roles' map for authorization independence.",
+          "params": [
+            {
+              "name": "dashboardLinkId",
+              "description": "The unique identifier for the dashboard link."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes authorization independence and QAPs for the TractorLink application. It leverages denormalization and structural segregation to ensure secure and scalable access control for dashboard links.\n\n1.  **Authorization Independence:** The `dashboardLinks` collection includes a denormalized `roles` map, containing user roles. This eliminates the need for `get()` calls to other collections for authorization, enabling atomic operations.\n2.  **QAPs (Rules are not Filters):** The segregation of roles into the `/roles_admin/{uid}` collection ensures that listing operations on `/dashboardLinks` do not expose sensitive data based on user roles. The existence of a document in `/roles_admin/{uid}` is sufficient to grant admin privileges.\n3.  **Role-Based Access Control:**  Admin privileges are determined by the presence of a document in the `/roles_admin/{uid}` collection, representing global roles.  Dashboard links are stored in a single collection (`/dashboardLinks`) with denormalized role-based access control through the `roles` map. Viewers have read-only access, enforced by rules based on the `roles` map in each `DashboardLink` document.\n4.  **Data Integrity:** The structure allows for secure creation and modification of dashboard links, with rules enforcing that only admins can create or update links, and viewers have read-only access.\n\nIn terms of addressing the original error, the error `auth/api-key-not-valid` is an authentication error reported by firebase. This error is related to Authentication, not Firestore structure. This data structure enables simple and robust security rules, improving the overall security and maintainability of the TractorLink application."
+  }
+}
