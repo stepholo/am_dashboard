@@ -18,50 +18,53 @@ import { seedData } from '../data';
 
 // Function to seed initial data or update existing data
 export async function seedInitialData(db: Firestore) {
+    const seedMarkerRef = doc(db, 'internal', 'seedMarker');
+    const seedMarkerSnap = await getDoc(seedMarkerRef);
+
+    // If data has been seeded and updated, do nothing.
+    if (seedMarkerSnap.exists() && seedMarkerSnap.data().updatedWithImages) {
+        console.log('All links are up-to-date, skipping seed.');
+        return;
+    }
+
     const linksCollectionRef = collection(db, 'dashboardLinks');
-    const q = query(linksCollectionRef, orderBy('order', 'asc'));
+    const q = query(linksCollectionRef);
     const existingLinksSnap = await getDocs(q);
     const existingLinks = existingLinksSnap.docs.map(d => ({ ...d.data(), id: d.id })) as DashboardLink[];
+
+    const batch = writeBatch(db);
 
     // If there's no data, seed it all.
     if (existingLinks.length === 0) {
         console.log('No links found, seeding initial data...');
-        const batch = writeBatch(db);
         seedData.forEach((link, index) => {
             const docRef = doc(linksCollectionRef);
             batch.set(docRef, { ...link, order: index });
         });
-        await batch.commit();
-        console.log('Initial seeding complete.');
-        return;
-    }
-
-    // If data exists, check if it needs updating (e.g., missing imageUrl)
-    const linksToUpdate = existingLinks.filter(link => !link.imageUrl);
-    if (linksToUpdate.length > 0) {
-        console.log('Found links without images, updating...');
-        const batch = writeBatch(db);
-        
-        // Create a map of existing links by name/section for easy lookup
+    } else { // If data exists, check if it needs updating (e.g., missing imageUrl)
+        console.log('Found existing links, checking for image updates...');
         const existingMap = new Map(existingLinks.map(l => [`${l.section}-${l.name}`, l]));
 
         seedData.forEach(seedLink => {
             const mapKey = `${seedLink.section}-${seedLink.name}`;
             const existingLink = existingMap.get(mapKey);
-            if (existingLink && !existingLink.imageUrl && seedLink.imageUrl) {
+            // If the link exists in DB but doesn't have an image, or the image is different, update it.
+            if (existingLink && (!existingLink.imageUrl || existingLink.imageUrl !== seedLink.imageUrl)) {
                  const docRef = doc(db, 'dashboardLinks', existingLink.id);
-                 batch.update(docRef, { 
+                 // Use set with merge to add/update fields without overwriting the whole doc
+                 batch.set(docRef, {
                     imageUrl: seedLink.imageUrl,
                     imageHint: seedLink.imageHint
-                 });
+                 }, { merge: true });
             }
         });
-
-        await batch.commit();
-        console.log('Updated links with images.');
-    } else {
-        console.log('All links are up-to-date, skipping seed.');
     }
+
+    // Mark that seeding and image update process has been completed.
+    batch.set(seedMarkerRef, { seeded: true, updatedWithImages: true }, { merge: true });
+
+    await batch.commit();
+    console.log('Initial seeding/update complete.');
 }
 
 

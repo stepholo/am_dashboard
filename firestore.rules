@@ -36,23 +36,8 @@ service cloud.firestore {
     }
     
     function isSeeding() {
-      return !exists(/databases/$(database)/documents/internal/seedMarker);
-    }
-    
-    function isAddingImageToLink() {
-      // Allow update only if imageUrl is being added and wasn't there before.
-      let isAddingImage = request.resource.data.imageUrl != null && resource.data.imageUrl == null;
-      let isAddingHint = request.resource.data.imageHint != null && resource.data.imageHint == null;
-      // Ensure no other fields are being changed by comparing the keys.
-      let existingKeys = resource.data.keys();
-      let requestKeys = request.resource.data.keys();
-      
-      // All new keys must be either 'imageUrl' or 'imageHint'
-      let newKeys = requestKeys.removeAll(existingKeys);
-      let allowedNewKeys = ['imageUrl', 'imageHint'];
-      let allNewKeysAreAllowed = newKeys.hasOnly(allowedNewKeys);
-
-      return (isAddingImage || isAddingHint) && allNewKeysAreAllowed;
+      let hasBeenUpdated = get(/databases/$(database)/documents/internal/seedMarker).data.updatedWithImages;
+      return hasBeenUpdated == false || hasBeenUpdated == null;
     }
 
     match /roles_admin/{uid} {
@@ -67,10 +52,8 @@ service cloud.firestore {
 
     match /dashboardLinks/{dashboardLinkId} {
       allow get, list: if isSignedIn();
-      // Allow create/delete only for admins or during initial seed.
-      allow create, delete: if isAdmin() || (isSignedIn() && isSeeding());
-      // Allow update for admins, or if user is just adding the image fields.
-      allow update: if isAdmin() || (isSignedIn() && isAddingImageToLink());
+      // Allow write (create, update, delete) for admins, or during the initial seed.
+      allow write: if isAdmin() || (isSignedIn() && isSeeding());
     }
 
     /**
