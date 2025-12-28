@@ -37,9 +37,7 @@ export async function seedLinks(db: Firestore) {
 // Get all links for a specific section
 export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
   const linksCollection = collection(db, 'dashboardLinks');
-  // One-time seed check for convenience in this portfolio project
-  await seedLinks(db); 
-
+  
   const q = query(
     linksCollection,
     where('section', '==', section),
