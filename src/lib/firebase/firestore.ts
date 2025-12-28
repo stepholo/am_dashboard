@@ -13,8 +13,8 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore';
-import type { DashboardLink } from '../types';
-import { seedData } from '../data';
+import type { DashboardLink } from '@/lib/types';
+import { seedData } from '@/lib/data';
 
 // Function to seed initial data or update existing data
 export async function seedInitialData(db: Firestore) {
