@@ -25,6 +25,7 @@ import { SECTIONS } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import type { DashboardLink } from '@/lib/types';
 import { Plus } from 'lucide-react';
+import { useFirestore } from '@/firebase';
 
 interface LinkEditorProps {
     section?: string;
@@ -34,6 +35,7 @@ interface LinkEditorProps {
 }
 
 export default function AddLinkButton({ section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
+  const db = useFirestore();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(linkToEdit?.name || '');
   const [url, setUrl] = useState(linkToEdit?.url || '');
@@ -50,10 +52,10 @@ export default function AddLinkButton({ section, linkToEdit = null, onLinkAdded,
 
     try {
         if (isEditing) {
-            await updateLink(linkToEdit.id, { name, url, section: linkSection, type });
+            await updateLink(db, linkToEdit.id, { name, url, section: linkSection, type });
             toast({ title: 'Link updated successfully' });
         } else {
-            await addLink({ name, url, section: linkSection, type, order: 999 }); // Order can be managed more robustly
+            await addLink(db, { name, url, section: linkSection, type, order: 999 }); // Order can be managed more robustly
             toast({ title: 'Link added successfully' });
         }
         onLinkAdded();

@@ -21,11 +21,13 @@ import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
 import { deleteLink } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
 
 export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUpdate: () => void; }) {
   const { openInSinglePane, openInSplitPane } = useDashboard();
   const { user } = useAuth();
   const { toast } = useToast();
+  const db = useFirestore();
 
   const handleOpen = () => {
     switch (link.type) {
@@ -44,7 +46,7 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
   const handleDelete = async () => {
     if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
         try {
-            await deleteLink(link.id);
+            await deleteLink(db, link.id);
             toast({ title: "Link deleted successfully" });
             onUpdate();
         } catch (error) {

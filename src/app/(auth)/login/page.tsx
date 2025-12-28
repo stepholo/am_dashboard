@@ -2,16 +2,18 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth as useFirebaseAuth } from '@/firebase';
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
 import { useToast } from '@/hooks/use-toast';
 import { ALLOWED_DOMAIN } from '@/lib/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
+  const { auth } = useFirebaseAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -22,7 +24,7 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   const handleSignIn = async () => {
-    const firebaseUser = await signInWithGoogle();
+    const firebaseUser = await signInWithGoogle(auth);
     if (firebaseUser && firebaseUser.email && !firebaseUser.email.endsWith(`@${ALLOWED_DOMAIN}`)) {
       toast({
         variant: 'destructive',

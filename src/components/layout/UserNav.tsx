@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from '@/lib/firebase/auth';
+import { signOut as firebaseSignOut } from '@/lib/firebase/auth';
 import type { UserProfile } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, ChevronsLeftRight } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
+import { useAuth as useFirebaseAuth } from '@/firebase';
 
 export default function UserNav({ user }: { user: UserProfile }) {
   const { state } = useSidebar();
+  const { auth } = useFirebaseAuth();
+
+  const handleSignOut = () => {
+    firebaseSignOut(auth);
+  }
 
   if (state === 'collapsed') {
     return (
@@ -42,7 +48,7 @@ export default function UserNav({ user }: { user: UserProfile }) {
                 </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                 </DropdownMenuItem>
@@ -75,7 +81,7 @@ export default function UserNav({ user }: { user: UserProfile }) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-                 <DropdownMenuItem onClick={() => signOut()}>
+                 <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                 </DropdownMenuItem>

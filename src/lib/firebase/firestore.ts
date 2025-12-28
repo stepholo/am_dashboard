@@ -8,16 +8,15 @@ import {
   doc,
   addDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  Firestore
 } from 'firebase/firestore';
-import { db } from './config';
 import type { DashboardLink } from '../types';
 import { seedData } from '../data';
 
-const linksCollection = collection(db, 'links');
-
 // Function to seed initial data
-export async function seedLinks() {
+export async function seedLinks(db: Firestore) {
+  const linksCollection = collection(db, 'dashboardLinks');
   const q = query(linksCollection);
   const snapshot = await getDocs(q);
 
@@ -36,9 +35,10 @@ export async function seedLinks() {
 }
 
 // Get all links for a specific section
-export async function getLinksForSection(section: string): Promise<DashboardLink[]> {
+export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
+  const linksCollection = collection(db, 'dashboardLinks');
   // One-time seed check for convenience in this portfolio project
-  await seedLinks(); 
+  await seedLinks(db); 
 
   const q = query(
     linksCollection,
@@ -50,18 +50,19 @@ export async function getLinksForSection(section: string): Promise<DashboardLink
 }
 
 // Add a new link
-export async function addLink(link: Omit<DashboardLink, 'id'>) {
+export async function addLink(db: Firestore, link: Omit<DashboardLink, 'id'>) {
+    const linksCollection = collection(db, 'dashboardLinks');
     return await addDoc(linksCollection, link);
 }
 
 // Update an existing link
-export async function updateLink(id: string, data: Partial<DashboardLink>) {
-    const linkDoc = doc(db, 'links', id);
+export async function updateLink(db: Firestore, id: string, data: Partial<DashboardLink>) {
+    const linkDoc = doc(db, 'dashboardLinks', id);
     return await updateDoc(linkDoc, data);
 }
 
 // Delete a link
-export async function deleteLink(id: string) {
-    const linkDoc = doc(db, 'links', id);
+export async function deleteLink(db: Firestore, id: string) {
+    const linkDoc = doc(db, 'dashboardLinks', id);
     return await deleteDoc(linkDoc);
 }
