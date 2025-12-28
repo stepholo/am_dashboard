@@ -10,7 +10,8 @@ import { Card } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function IframePane({ url }: { url: string;}) {
-    const iframeUrl = url.includes('docs.google.com') ? url.replace('rm=minimal', 'ui=false&amp;embedded=true') : url;
+    // Restore full Google Sheets UI by removing 'minimal' parameter
+    const iframeUrl = url.includes('docs.google.com') ? url.replace(/(&?)(rm=minimal|ui=false&?|embedded=true&?)/g, '') : url;
     
     return (
         <Card className="flex flex-1 flex-col overflow-hidden border-0 rounded-none">
@@ -57,12 +58,13 @@ function ContentViewComponent() {
         <Tabs value={activePaneId || ''} onValueChange={setActivePane} className="flex flex-1 flex-col">
             <TabsList className="w-full justify-start rounded-none bg-transparent p-0 border-b">
                 {openPanes.map((pane) => (
-                <TabsTrigger 
-                    key={pane.id} 
-                    value={pane.id}
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-2 text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                >
-                    {pane.name}
+                <div key={pane.id} className="relative">
+                    <TabsTrigger
+                        value={pane.id}
+                        className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-2 pr-8 text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                        {pane.name}
+                    </TabsTrigger>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -74,7 +76,7 @@ function ContentViewComponent() {
                     >
                         <X className="h-4 w-4" />
                     </Button>
-                </TabsTrigger>
+                </div>
                 ))}
             </TabsList>
             {openPanes.map((pane) => (
