@@ -17,17 +17,17 @@ import type { DashboardLink } from '@/lib/types';
 import { seedData } from '@/lib/data';
 
 // Function to seed initial data or update existing data
-export async function seedInitialData(db: Firestore) {
+export async function seedInitialData(db: Firestore, force: boolean = false) {
     const seedMarkerRef = doc(db, 'internal', 'seedMarker');
     const seedMarkerSnap = await getDoc(seedMarkerRef);
 
-    // If data has been seeded and updated with images, do nothing.
-    if (seedMarkerSnap.exists() && seedMarkerSnap.data().updatedWithImages) {
+    // If data has been seeded and updated with images, do nothing unless forced.
+    if (!force && seedMarkerSnap.exists() && seedMarkerSnap.data().updatedWithImages) {
         console.log('All links are up-to-date, skipping seed.');
         return;
     }
 
-    console.log('Links are missing image data. Re-seeding database...');
+    console.log(force ? 'Forcing database re-seed...' : 'Links are missing or outdated. Seeding database...');
 
     const linksCollectionRef = collection(db, 'dashboardLinks');
     const existingLinksSnap = await getDocs(query(linksCollectionRef));

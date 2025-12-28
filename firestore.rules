@@ -36,10 +36,9 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
     
+    // This function checks if the database has been seeded before.
     function isSeeding() {
-      // Allow seeding if the marker doesn't exist or `updatedWithImages` is not true.
-      let hasBeenUpdated = get(/databases/$(database)/documents/internal/seedMarker).data.updatedWithImages;
-      return hasBeenUpdated == false || hasBeenUpdated == null;
+        return !exists(/databases/$(database)/documents/internal/seedMarker);
     }
 
     match /roles_admin/{uid} {
@@ -47,17 +46,18 @@ service cloud.firestore {
     }
     
     match /internal/seedMarker {
-      // Anyone can read the marker. Allow write only if it's the initial seed.
+      // Any signed in user can read the marker to see if seeding is needed.
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSeeding();
+      // Only admins can write to the marker, which happens during seeding.
+      allow write: if isAdmin();
     }
 
     match /dashboardLinks/{linkId} {
       // Any signed-in user can read the links.
       allow get, list: if isSignedIn();
       
-      // Only Admins can write. The one exception is for the initial data seed.
-      allow write: if isAdmin() || (isSignedIn() && isSeeding());
+      // Only Admins can write to dashboard links.
+      allow write: if isAdmin();
     }
 
     /**
