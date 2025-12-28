@@ -86,21 +86,17 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
               <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
                  <SidebarMenuItem>
                     <AccordionTrigger asChild>
-                      <Link href={`/${section.slug}`}>
                         <SidebarMenuButton
+                            asChild
                             isActive={isActive}
                             tooltip={{ children: section.name }}
-                            asChild={false} 
-                            onClick={(e) => { 
-                                // Prevent accordion from closing when clicking active section
-                                if (isActive) e.preventDefault(); 
-                            }}
                             className="w-full"
                         >
-                            <Icon />
-                            <span>{section.name}</span>
+                            <Link href={`/${section.slug}`}>
+                                <Icon />
+                                <span>{section.name}</span>
+                            </Link>
                         </SidebarMenuButton>
-                      </Link>
                     </AccordionTrigger>
                  </SidebarMenuItem>
                  {!isCollapsed && (
