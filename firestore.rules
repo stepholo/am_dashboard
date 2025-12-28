@@ -32,10 +32,12 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // Check if a document for the user exists in the admin roles collection.
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
     
     function isSeeding() {
+      // Allow seeding if the marker doesn't exist or `updatedWithImages` is not true.
       let hasBeenUpdated = get(/databases/$(database)/documents/internal/seedMarker).data.updatedWithImages;
       return hasBeenUpdated == false || hasBeenUpdated == null;
     }
@@ -50,9 +52,11 @@ service cloud.firestore {
       allow write: if isSignedIn() && isSeeding();
     }
 
-    match /dashboardLinks/{dashboardLinkId} {
+    match /dashboardLinks/{linkId} {
+      // Any signed-in user can read the links.
       allow get, list: if isSignedIn();
-      // Allow write (create, update, delete) for admins, or during the initial seed.
+      
+      // Only Admins can write. The one exception is for the initial data seed.
       allow write: if isAdmin() || (isSignedIn() && isSeeding());
     }
 
