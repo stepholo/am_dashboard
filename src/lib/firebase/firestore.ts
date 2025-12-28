@@ -12,8 +12,11 @@ import {
   Firestore,
   getDoc,
 } from 'firebase/firestore';
-import type { DashboardLink } from '@/lib/types';
-import { seedData } from '@/lib/data';
+import type { DashboardLink } from '../types';
+import { seedData } from '../data';
+
+// This flag will be stored in Firestore to prevent re-seeding.
+const SEED_FLAG_DOC = 'internal/seedingFlags';
 
 // Function to seed initial data. This will delete all existing links.
 export async function seedInitialData(db: Firestore) {
@@ -30,12 +33,17 @@ export async function seedInitialData(db: Firestore) {
     // Add all links from the seed data with the correct image info and order
     seedData.forEach((link, index) => {
         const docRef = doc(linksCollectionRef);
-        batch.set(docRef, { ...link, order: index });
+        batch.set(docRef, { 
+            ...link, 
+            imageUrl: link.imageUrl || '',
+            imageHint: link.imageHint || '',
+            order: index 
+        });
     });
     
-    // Set a marker to indicate seeding is done.
-    const seedMarkerRef = doc(db, 'internal', 'seedMarker');
-    batch.set(seedMarkerRef, { seededOn: new Date().toISOString() });
+    // Set a marker to indicate seeding is done to prevent re-seeding.
+    const seedMarkerRef = doc(db, SEED_FLAG_DOC);
+    batch.set(seedMarkerRef, { updatedWithImagesOn: new Date().toISOString() });
 
     await batch.commit();
     console.log('Database seeding complete.');
@@ -43,7 +51,7 @@ export async function seedInitialData(db: Firestore) {
 
 
 // Get all links for a specific section, and seed if empty
-export async function getLinksForSection(db: Firestore, section: string, isAdmin: boolean): Promise<DashboardLink[]> {
+export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
   const linksCollection = collection(db, 'dashboardLinks');
   
   const q = query(
@@ -54,20 +62,6 @@ export async function getLinksForSection(db: Firestore, section: string, isAdmin
   
   const snapshot = await getDocs(q);
 
-  // If the section is empty and the user is an admin, it's likely the DB hasn't been seeded.
-  if (snapshot.empty && isAdmin) {
-    const internalCollection = collection(db, 'internal');
-    const seedMarkerSnap = await getDoc(doc(internalCollection, 'seedMarker'));
-    
-    if (!seedMarkerSnap.exists()) {
-        console.log("No links found and not seeded, seeding database now...");
-        await seedInitialData(db);
-        // Re-fetch the links after seeding
-        const seededSnapshot = await getDocs(q);
-        return seededSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DashboardLink));
-    }
-  }
-  
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DashboardLink));
 }
 

@@ -16,9 +16,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, ExternalLink, Columns, Tv, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import type { DashboardLink } from '@/lib/types';
-import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
 import { deleteLink } from '@/lib/firebase/firestore';
@@ -26,22 +25,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 
 export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUpdate: () => void; }) {
-  const { openInSinglePane, openInSplitPane } = useDashboard();
   const { user } = useAuth();
   const { toast } = useToast();
   const db = useFirestore();
 
   const handleOpen = () => {
-    switch (link.type) {
-      case 'embed':
-        openInSinglePane(link.url, link.name);
-        break;
-      case 'external':
-        window.open(link.url, '_blank');
-        break;
-      case 'protocol':
+    if (link.type === 'protocol') {
         window.location.href = link.url;
-        break;
+    } else {
+        window.open(link.url, '_blank');
     }
   };
 
@@ -88,21 +80,9 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                {link.type === 'embed' && (
-                <>
-                    <DropdownMenuItem onClick={() => openInSinglePane(link.url, link.name)}>
-                    <Tv className="mr-2 h-4 w-4" />
-                    <span>Open on Dashboard</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openInSplitPane(link.url, link.name)}>
-                    <Columns className="mr-2 h-4 w-4" />
-                    <span>Open in Split Screen</span>
-                    </DropdownMenuItem>
-                </>
-                )}
                 <DropdownMenuItem onClick={() => window.open(link.url, '_blank')}>
-                <ExternalLink className="mr-2 h-4 w-4" />
-                <span>Open in New Tab</span>
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <span>Open in New Tab</span>
                 </DropdownMenuItem>
                 {user?.role === 'admin' && db && (
                     <>

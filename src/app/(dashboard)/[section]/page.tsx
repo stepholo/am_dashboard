@@ -1,4 +1,3 @@
-import { DashboardProvider } from "@/context/DashboardContext";
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import { SECTIONS } from "@/lib/constants";
 import { notFound } from "next/navigation";
@@ -11,9 +10,7 @@ export default function SectionPage({ params }: { params: { section: string } })
   }
 
   return (
-    <DashboardProvider>
-      <DashboardClient sectionSlug={params.section} sectionName={sectionInfo.name} />
-    </DashboardProvider>
+    <DashboardClient sectionSlug={params.section} sectionName={sectionInfo.name} />
   );
 }
 
