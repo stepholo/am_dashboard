@@ -16,21 +16,26 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, ExternalLink, Pencil, Trash2, LayoutDashboard, Rows } from 'lucide-react';
 import type { DashboardLink } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
 import { deleteLink } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
+import { useDashboard } from '@/hooks/useDashboard';
+
 
 export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUpdate: () => void; }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const db = useFirestore();
+  const { openInSinglePane, openInSplitPane } = useDashboard();
 
   const handleOpen = () => {
-    if (link.type === 'protocol') {
+    if (link.type === 'embed') {
+      openInSinglePane(link.url, link.name);
+    } else if (link.type === 'protocol') {
         window.location.href = link.url;
     } else {
         window.open(link.url, '_blank');
@@ -80,6 +85,18 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                 {link.type === 'embed' && (
+                  <>
+                    <DropdownMenuItem onClick={() => openInSinglePane(link.url, link.name)}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Open in Dashboard</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openInSplitPane(link.url, link.name)}>
+                      <Rows className="mr-2 h-4 w-4" />
+                      <span>Open in Split Screen</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuItem onClick={() => window.open(link.url, '_blank')}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     <span>Open in New Tab</span>

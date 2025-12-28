@@ -8,12 +8,16 @@ import { Skeleton } from '../ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
 import { useFirestore } from '@/firebase';
+import { DashboardProvider } from '@/context/DashboardContext';
+import ContentView from './ContentView';
+import { useDashboard } from '@/hooks/useDashboard';
 
-export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string }) {
+function DashboardGrid({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string }) {
   const { user, loading: authLoading } = useAuth();
   const db = useFirestore();
   const [links, setLinks] = useState<DashboardLink[]>([]);
   const [loading, setLoading] = useState(true);
+  const { viewMode } = useDashboard();
 
   const fetchLinks = async () => {
     if (!db) return;
@@ -29,6 +33,10 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
     }
   }, [sectionSlug, db, authLoading]);
 
+  if (viewMode !== 'grid') {
+    return null;
+  }
+  
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -49,4 +57,13 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
       )}
     </div>
   );
+}
+
+export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string }) {
+    return (
+        <DashboardProvider>
+            <DashboardGrid sectionSlug={sectionSlug} sectionName={sectionName} />
+            <ContentView />
+        </DashboardProvider>
+    )
 }

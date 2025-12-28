@@ -2,7 +2,7 @@
 
 import { useDashboard } from '@/hooks/useDashboard';
 import { Button } from '../ui/button';
-import { X, ArrowLeft, RefreshCw, ExternalLink, Replace } from 'lucide-react';
+import { X, ArrowLeft, ExternalLink, Replace } from 'lucide-react';
 import EmptyState from './EmptyState';
 import { Card } from '../ui/card';
 
