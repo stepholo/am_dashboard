@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, ChevronsLeftRight } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
-import { useAuth as useFirebaseAuth } from '@/firebase';
+import { useAuth } from '@/firebase';
 
 export default function UserNav({ user }: { user: UserProfile }) {
   const { state } = useSidebar();
-  const { auth } = useFirebaseAuth();
+  const auth = useAuth();
 
   const handleSignOut = () => {
     firebaseSignOut(auth);
