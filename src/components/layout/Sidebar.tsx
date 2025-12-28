@@ -34,10 +34,11 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
           const Icon = section.icon;
           return (
             <SidebarMenuItem key={section.slug}>
-              <Link href={`/${section.slug}`} legacyBehavior passHref>
+              <Link href={`/${section.slug}`}>
                 <SidebarMenuButton
                   isActive={pathname.startsWith(`/${section.slug}`)}
                   tooltip={{ children: section.name }}
+                  asChild={false} 
                 >
                   <Icon />
                   <span>{section.name}</span>
