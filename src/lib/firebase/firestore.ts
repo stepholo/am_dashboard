@@ -9,30 +9,37 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  Firestore
+  Firestore,
+  getDoc,
+  setDoc,
 } from 'firebase/firestore';
 import type { DashboardLink } from '../types';
 import { seedData } from '../data';
 
 // Function to seed initial data
-export async function seedLinks(db: Firestore) {
-  const linksCollection = collection(db, 'dashboardLinks');
-  const q = query(linksCollection);
-  const snapshot = await getDocs(q);
+export async function seedInitialData(db: Firestore) {
+    const seedMarkerRef = doc(db, 'internal', 'seedMarker');
+    const seedMarkerSnap = await getDoc(seedMarkerRef);
 
-  if (snapshot.empty) {
-    console.log('No links found, seeding initial data...');
-    const batch = writeBatch(db);
-    seedData.forEach((link, index) => {
-      const docRef = doc(linksCollection);
-      batch.set(docRef, { ...link, order: index });
-    });
-    await batch.commit();
-    console.log('Seeding complete.');
-  } else {
-    console.log('Links collection already contains data, skipping seed.');
-  }
+    if (!seedMarkerSnap.exists()) {
+        console.log('No seed marker found, seeding initial data...');
+        const linksCollection = collection(db, 'dashboardLinks');
+        const batch = writeBatch(db);
+        
+        seedData.forEach((link, index) => {
+            const docRef = doc(linksCollection);
+            batch.set(docRef, { ...link, order: index });
+        });
+
+        batch.set(seedMarkerRef, { seeded: true });
+
+        await batch.commit();
+        console.log('Seeding complete.');
+    } else {
+        console.log('Seed marker found, skipping initial data seed.');
+    }
 }
+
 
 // Get all links for a specific section
 export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
