@@ -9,14 +9,62 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/Logo";
 import { SECTIONS } from "@/lib/constants";
 import UserNav from "./UserNav";
-import type { UserProfile } from "@/lib/types";
+import type { UserProfile, DashboardLink } from "@/lib/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { useFirestore, useCollection } from "@/firebase";
+import { collection, query, orderBy, where } from "firebase/firestore";
+import { useMemo } from "react";
+import { Skeleton } from "../ui/skeleton";
+import { ChevronsRight } from "lucide-react";
+
+function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
+    const db = useFirestore();
+    const linksQuery = useMemo(() => {
+        if (!db) return null;
+        return query(collection(db, 'dashboardLinks'), where('section', '==', sectionSlug), orderBy('order'));
+    }, [db, sectionSlug]);
+
+    const { data: links, isLoading } = useCollection<DashboardLink>(linksQuery);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col gap-2 py-2">
+                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex flex-col gap-1 py-1">
+            {links?.map(link => (
+                <Link 
+                    href={`/${sectionSlug}?linkId=${link.id}`} 
+                    key={link.id} 
+                    className="group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={onLinkClick}
+                >
+                    <ChevronsRight className="h-4 w-4 flex-shrink-0 text-sidebar-accent-foreground/50 transition-transform group-hover:translate-x-1" />
+                    <span className="truncate">{link.name}</span>
+                </Link>
+            ))}
+        </div>
+    )
+}
 
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
+  const { state, setOpenMobile } = useSidebar();
+  const isCollapsed = state === 'collapsed';
+
+  const handleLinkClick = () => {
+    // Close mobile sidebar when a link is clicked
+    setOpenMobile(false);
+  }
 
   return (
     <Sidebar>
@@ -30,23 +78,40 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
       </SidebarHeader>
       
       <SidebarMenu className="flex-1 p-2">
-        {SECTIONS.map((section) => {
-          const Icon = section.icon;
-          return (
-            <SidebarMenuItem key={section.slug}>
-              <Link href={`/${section.slug}`}>
-                <SidebarMenuButton
-                  isActive={pathname.startsWith(`/${section.slug}`)}
-                  tooltip={{ children: section.name }}
-                  asChild={false} 
-                >
-                  <Icon />
-                  <span>{section.name}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          );
-        })}
+        <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
+          {SECTIONS.map((section) => {
+            const Icon = section.icon;
+            const isActive = pathname.startsWith(`/${section.slug}`);
+            return (
+              <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
+                 <SidebarMenuItem>
+                    <AccordionTrigger asChild>
+                      <Link href={`/${section.slug}`}>
+                        <SidebarMenuButton
+                            isActive={isActive}
+                            tooltip={{ children: section.name }}
+                            asChild={false} 
+                            onClick={(e) => { 
+                                // Prevent accordion from closing when clicking active section
+                                if (isActive) e.preventDefault(); 
+                            }}
+                            className="w-full"
+                        >
+                            <Icon />
+                            <span>{section.name}</span>
+                        </SidebarMenuButton>
+                      </Link>
+                    </AccordionTrigger>
+                 </SidebarMenuItem>
+                 {!isCollapsed && (
+                    <AccordionContent className="pl-8 pr-2">
+                       <SidebarSectionLinks sectionSlug={section.slug} onLinkClick={handleLinkClick} />
+                    </AccordionContent>
+                 )}
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
       </SidebarMenu>
 
       <SidebarFooter>

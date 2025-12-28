@@ -2,7 +2,13 @@ import DashboardClient from "@/components/dashboard/DashboardClient";
 import { SECTIONS } from "@/lib/constants";
 import { notFound } from "next/navigation";
 
-export default function SectionPage({ params }: { params: { section: string } }) {
+export default function SectionPage({ 
+    params,
+    searchParams 
+}: { 
+    params: { section: string };
+    searchParams?: { linkId?: string };
+}) {
   const sectionInfo = SECTIONS.find(s => s.slug === params.section);
 
   if (!sectionInfo) {
@@ -10,7 +16,11 @@ export default function SectionPage({ params }: { params: { section: string } })
   }
 
   return (
-    <DashboardClient sectionSlug={params.section} sectionName={sectionInfo.name} />
+    <DashboardClient 
+        sectionSlug={params.section} 
+        sectionName={sectionInfo.name} 
+        initialLinkId={searchParams?.linkId}
+    />
   );
 }
 
