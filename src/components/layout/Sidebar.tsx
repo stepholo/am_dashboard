@@ -16,7 +16,7 @@ import { SECTIONS } from "@/lib/constants";
 import UserNav from "./UserNav";
 import type { UserProfile, DashboardLink } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, orderBy, where } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
@@ -105,10 +105,10 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
                         isCollapsed ? "!size-8 !p-2 justify-center" : "",
                       )}
                     >
-                        <div onClick={(e) => { if(!isCollapsed) { e.preventDefault(); e.stopPropagation(); } }} className="flex flex-1 items-center gap-2">
+                        <Link href={`/${section.slug}`} onClick={(e) => { if(!isCollapsed) { e.preventDefault(); e.stopPropagation(); } }} className="flex flex-1 items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
-                        </div>
+                        </Link>
                     </AccordionTrigger>
                  </SidebarMenuItem>
                  {!isCollapsed && (
