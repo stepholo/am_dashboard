@@ -51,7 +51,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                         {canAddLinks && db && user && <AddLinkButton db={db} user={user} section={sectionSlug} onLinkAdded={refreshLinks} />}
                     </div>
                     
-                    {linksLoading ? (
+                    {isLoading ? (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-[280px] rounded-lg" />)}
                         </div>
@@ -64,7 +64,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                     )}
                 </div>
 
-                {linksLoading && !links && (
+                {isLoading && !links && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-[280px] rounded-lg" />)}
                     </div>
