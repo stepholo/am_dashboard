@@ -54,8 +54,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm shadow-xl">
+    <div 
+      className="flex min-h-screen items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1599827551882-8c121b1b70c6?q=80&w=1920')" }}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+      <Card className="z-10 w-full max-w-sm shadow-xl">
         <CardHeader className="flex flex-col items-center text-center">
             <div className="mb-4 h-18 w-auto text-primary">
                 <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.23 123.12" preserveAspectRatio="xMidYMid meet" className="h-16 w-auto">
