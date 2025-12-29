@@ -18,6 +18,17 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { MoreVertical, ExternalLink, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
 import type { DashboardLink } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,20 +64,18 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
         toast({ variant: 'destructive', title: "Database connection not found or user not logged in." });
         return;
     }
-    if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
-        if (isPersonal) {
-            deleteUserLink(db, user.uid, link.id);
-        } else {
-            if (user.role !== 'admin') {
-                toast({ variant: 'destructive', title: "You don't have permission to delete this link." });
-                return;
-            }
-            deleteLink(db, link.id);
+    
+    if (isPersonal) {
+        deleteUserLink(db, user.uid, link.id);
+    } else {
+        if (user.role !== 'admin') {
+            toast({ variant: 'destructive', title: "You don't have permission to delete this link." });
+            return;
         }
-        toast({ title: "Link deletion initiated." });
-        // Force a re-fetch of the links after deletion
-        onUpdate();
+        deleteLink(db, link.id);
     }
+    toast({ title: `"${link.name}" was successfully deleted.` });
+    onUpdate();
   }
   
   const canEdit = isPersonal || user?.role === 'admin';
@@ -122,10 +131,30 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
                                 <span>Edit</span>
                             </DropdownMenuItem>
                         } section={isPersonal ? 'personal-links' : link.section} />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete</span>
-                        </DropdownMenuItem>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={(e) => e.preventDefault()}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete the link named "{link.name}".
+                                  </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                                      Delete
+                                  </AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                     </>
                 )}
             </DropdownMenuContent>
