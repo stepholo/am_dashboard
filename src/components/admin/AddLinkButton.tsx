@@ -59,7 +59,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
       setUrl(linkToEdit?.url || '');
       setDescription((linkToEdit as any)?.description || '');
       setLinkSection(currentSection);
-      setType(linkToEdit?.type || 'embed');
+      setType((linkToEdit?.type as any) || 'embed');
       setOpenType(linkToEdit?.openType || 'dashboard');
     }
   }, [open, linkToEdit, section, isPersonalLink]);
@@ -212,3 +212,5 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
     </Dialog>
   );
 }
+
+    
