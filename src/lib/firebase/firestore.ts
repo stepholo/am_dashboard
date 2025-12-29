@@ -1,3 +1,4 @@
+
 import {
   collection,
   query,
@@ -14,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import type { DashboardLink } from '../types';
 import { seedData } from '../data';
+import { placeholderImages } from '../placeholder-images';
 
 // This flag will be stored in Firestore to prevent re-seeding.
 const SEED_FLAG_DOC = 'internal/seedingFlags';
@@ -65,10 +67,19 @@ export async function getLinksForSection(db: Firestore, section: string): Promis
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DashboardLink));
 }
 
+const getRandomPlaceholderImage = () => {
+    if (placeholderImages.length === 0) return { imageUrl: '', imageHint: '' };
+    const randomIndex = Math.floor(Math.random() * placeholderImages.length);
+    const { imageUrl, imageHint } = placeholderImages[randomIndex];
+    return { imageUrl, imageHint };
+}
+
 // Add a new link
 export async function addLink(db: Firestore, link: Omit<DashboardLink, 'id'>) {
     const linksCollection = collection(db, 'dashboardLinks');
-    return await addDoc(linksCollection, link);
+    const { imageUrl, imageHint } = getRandomPlaceholderImage();
+    const newLink = { ...link, imageUrl, imageHint };
+    return await addDoc(linksCollection, newLink);
 }
 
 // Update an existing link
@@ -85,9 +96,11 @@ export async function deleteLink(db: Firestore, id: string) {
 
 
 // User specific links
-export async function addUserLink(db: Firestore, userId: string, link: Omit<DashboardLink, 'id'>) {
+export async function addUserLink(db: Firestore, userId: string, link: Partial<Omit<DashboardLink, 'id'>>) {
     const userLinksCollection = collection(db, 'users', userId, 'dashboardLinks');
-    return await addDoc(userLinksCollection, link);
+    const { imageUrl, imageHint } = getRandomPlaceholderImage();
+    const newLink = { ...link, imageUrl, imageHint };
+    return await addDoc(userLinksCollection, newLink);
 }
 
 export async function updateUserLink(db: Firestore, userId: string, linkId: string, data: Partial<DashboardLink>) {

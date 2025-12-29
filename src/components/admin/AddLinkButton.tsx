@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -58,7 +59,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
       setDescription((linkToEdit as any)?.description || '');
       setLinkSection(linkToEdit?.section || section || SECTIONS[0].slug);
       setType(linkToEdit?.type || 'embed');
-      setOpenType((linkToEdit as any)?.openType || 'dashboard');
+      setOpenType(linkToEdit?.openType || 'dashboard');
     }
   }, [open, linkToEdit, section]);
 
@@ -78,14 +79,14 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
         name,
         url,
         type,
-        openType: openType,
+        openType: type === 'embed' ? openType : 'new-tab',
         order: (linkToEdit as any)?.order ?? 999,
     };
 
     try {
         if (isPersonalLink) {
             linkData.description = description;
-            if (isEditing) {
+            if (isEditing && linkToEdit) {
                 await updateUserLink(db, user.uid, linkToEdit.id, linkData);
                 toast({ title: 'Personal link updated successfully' });
             } else {
@@ -99,7 +100,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
                 return;
             }
             linkData.section = linkSection;
-            if (isEditing) {
+            if (isEditing && linkToEdit) {
                 await updateLink(db, linkToEdit.id, linkData);
                 toast({ title: 'Link updated successfully' });
             } else {
