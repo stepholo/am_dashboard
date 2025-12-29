@@ -11,7 +11,7 @@ export type Section = {
 };
 
 export const SECTIONS: Section[] = [
-  { name: 'PAYG Pipeline', slug: 'payg-pipeline', icon: Settings },
+  { name: 'PAYG Operations', slug: 'payg-operations', icon: Settings },
   { name: 'Invoicing', slug: 'invoicing', icon: FileText },
   { name: 'Tractor Service', slug: 'tractor-service', icon: Wrench },
   { name: 'Reports', slug: 'reports', icon: BarChart },

@@ -13,7 +13,7 @@ function SectionPageContent() {
 
   if (!sectionInfo) {
     // This can be a notFound() call or a loading/error state
-    return <div>Section not found</div>;
+    return <div className="p-4">Section not found</div>;
   }
 
   return (

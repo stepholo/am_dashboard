@@ -2,11 +2,11 @@ import type { DashboardLink } from './types';
 import { placeholderImages } from './placeholder-images';
 
 const linksWithImages: Omit<DashboardLink, 'id' | 'order'>[] = [
-  // PAYG Pipeline
+  // PAYG Operations
   {
     name: 'PAYG Pipeline Portal',
     url: 'https://payg.hellotractor.com/',
-    section: 'payg-pipeline',
+    section: 'payg-operations',
     type: 'external',
     imageUrl: placeholderImages[0].imageUrl,
     imageHint: placeholderImages[0].imageHint,
@@ -14,7 +14,7 @@ const linksWithImages: Omit<DashboardLink, 'id' | 'order'>[] = [
   {
     name: 'Pipeline Spreadsheet',
     url: 'https://docs.google.com/spreadsheets/d/1AB5XqXmvMqlTQrbu4Qc0pa0dtEIS4TbCUasvOZDCBVw/edit?rm=minimal',
-    section: 'payg-pipeline',
+    section: 'payg-operations',
     type: 'embed',
     imageUrl: placeholderImages[1].imageUrl,
     imageHint: placeholderImages[1].imageHint,
