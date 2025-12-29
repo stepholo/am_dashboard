@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, ChevronsLeftRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { LogOut, ChevronsLeft } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
 import { useAuth } from '@/firebase';
 import { cn } from '@/lib/utils';
@@ -23,46 +23,17 @@ export default function UserNav({ user }: { user: UserProfile }) {
   const isCollapsed = state === 'collapsed';
 
   const handleSignOut = () => {
-    firebaseSignOut(auth);
-  }
-
-  if (isCollapsed) {
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.photoURL} alt={user.displayName} />
-                    <AvatarFallback>
-                        {user.displayName
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
-                    </AvatarFallback>
-                    </Avatar>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
-  }
+    if (auth) {
+      firebaseSignOut(auth);
+    }
+  };
 
   return (
-    <div className="flex w-full items-center justify-between rounded-md p-2 hover:bg-sidebar-accent">
-        <div className="flex items-center gap-3">
-             <Avatar className="h-9 w-9">
+    <div className={cn("flex w-full items-center", isCollapsed ? "justify-center" : "justify-between rounded-md p-2 hover:bg-sidebar-accent")}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className={cn("relative rounded-full", isCollapsed ? "h-10 w-10" : "h-9 w-9 p-0")}>
+                <Avatar className="h-9 w-9">
                 <AvatarImage src={user.photoURL} alt={user.displayName} />
                 <AvatarFallback>
                     {user.displayName
@@ -70,16 +41,37 @@ export default function UserNav({ user }: { user: UserProfile }) {
                     .map((n) => n[0])
                     .join('')}
                 </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
+                </Avatar>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.displayName}</p>
+              <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {!isCollapsed && (
+        <div className="flex items-center gap-3">
+             <div className="flex flex-col">
                 <span className="text-sm font-medium leading-none">{user.displayName}</span>
                 <span className="text-xs leading-none text-muted-foreground">{user.email}</span>
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar}>
-            <ChevronsLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
-            <span className="sr-only">Toggle sidebar</span>
-        </Button>
+      )}
+
+      <Button variant="ghost" size="icon" className={cn("h-8 w-8", isCollapsed && "mt-2")} onClick={toggleSidebar}>
+        <ChevronsLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+        <span className="sr-only">Toggle sidebar</span>
+      </Button>
     </div>
   );
 }
