@@ -34,12 +34,12 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
   const { openInDashboard } = useDashboard();
 
   const handleOpen = () => {
-    if ((link as any).openType === 'new-tab') {
-        window.open(link.url, '_blank');
-        return;
-    }
     if (link.type === 'embed') {
-      openInDashboard({ id: link.id, url: link.url, name: link.name });
+        if (link.openType === 'new-tab') {
+            window.open(link.url, '_blank');
+        } else {
+            openInDashboard({ id: link.id, url: link.url, name: link.name });
+        }
     } else if (link.type === 'protocol') {
         window.location.href = link.url;
     } else {
@@ -90,7 +90,7 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
                 <CardTitle className="text-base font-medium leading-snug">
                 {link.name}
                 </CardTitle>
-                {(link as any).description && <CardDescription className="text-xs mt-1">{(link as any).description}</CardDescription>}
+                {link.description && <CardDescription className="text-xs mt-1">{link.description}</CardDescription>}
             </div>
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -111,10 +111,10 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
                     <ExternalLink className="mr-2 h-4 w-4" />
                     <span>Open in New Tab</span>
                 </DropdownMenuItem>
-                {canEdit && db && (
+                {canEdit && db && user && (
                     <>
                         <DropdownMenuSeparator />
-                        <AddLinkButton db={db} linkToEdit={link} onLinkAdded={onUpdate} trigger={
+                        <AddLinkButton db={db} user={user} linkToEdit={link} onLinkAdded={onUpdate} trigger={
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 <span>Edit</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,34 +23,44 @@ import {
 import { addLink, updateLink, addUserLink, updateUserLink } from '@/lib/firebase/firestore';
 import { SECTIONS } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import type { DashboardLink } from '@/lib/types';
+import type { DashboardLink, UserProfile } from '@/lib/types';
 import { Plus } from 'lucide-react';
 import { Firestore } from 'firebase/firestore';
-import { useAuth } from '@/hooks/useAuth';
 import { Textarea } from '../ui/textarea';
 
 interface LinkEditorProps {
     db: Firestore;
+    user: UserProfile | null;
     section?: string;
     linkToEdit?: DashboardLink | null;
     onLinkAdded: () => void;
     trigger?: React.ReactNode;
 }
 
-export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
-  const { user } = useAuth();
+export default function AddLinkButton({ db, user, section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState(linkToEdit?.name || '');
-  const [url, setUrl] = useState(linkToEdit?.url || '');
-  const [description, setDescription] = useState((linkToEdit as any)?.description || '');
-  const [linkSection, setLinkSection] = useState(linkToEdit?.section || section || SECTIONS[0].slug);
-  const [type, setType] = useState<'embed' | 'external' | 'protocol'>(linkToEdit?.type || 'embed');
-  const [openType, setOpenType] = useState((linkToEdit as any)?.openType || 'dashboard');
+  const [name, setName] = useState('');
+  const [url, setUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const [linkSection, setLinkSection] = useState('');
+  const [type, setType] = useState<'embed' | 'external' | 'protocol'>('embed');
+  const [openType, setOpenType] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const isEditing = !!linkToEdit;
   const isPersonalLink = section === 'personal-links';
+
+  useEffect(() => {
+    if (open) {
+      setName(linkToEdit?.name || '');
+      setUrl(linkToEdit?.url || '');
+      setDescription((linkToEdit as any)?.description || '');
+      setLinkSection(linkToEdit?.section || section || SECTIONS[0].slug);
+      setType(linkToEdit?.type || 'embed');
+      setOpenType((linkToEdit as any)?.openType || 'dashboard');
+    }
+  }, [open, linkToEdit, section]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,18 +74,17 @@ export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAd
     }
     setLoading(true);
 
-    const linkData = {
+    const linkData: Partial<DashboardLink> = {
         name,
         url,
-        description,
         type,
-        openType,
-        section: isPersonalLink ? 'personal-links' : linkSection,
+        openType: openType,
         order: (linkToEdit as any)?.order ?? 999,
     };
 
     try {
         if (isPersonalLink) {
+            linkData.description = description;
             if (isEditing) {
                 await updateUserLink(db, user.uid, linkToEdit.id, linkData);
                 toast({ title: 'Personal link updated successfully' });
@@ -89,21 +98,18 @@ export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAd
                 setLoading(false);
                 return;
             }
+            linkData.section = linkSection;
             if (isEditing) {
-                await updateLink(db, linkToEdit.id, { name, url, section: linkSection, type });
+                await updateLink(db, linkToEdit.id, linkData);
                 toast({ title: 'Link updated successfully' });
             } else {
-                await addLink(db, { name, url, section: linkSection, type, order: 999 }); // Order can be managed more robustly
+                await addLink(db, linkData as Omit<DashboardLink, 'id'>); 
                 toast({ title: 'Link added successfully' });
             }
         }
         
         onLinkAdded();
         setOpen(false);
-        // Reset form
-        setName('');
-        setUrl('');
-        setDescription('');
     } catch (error) {
         toast({
             variant: 'destructive',
@@ -116,19 +122,19 @@ export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAd
   };
 
   const dialogTrigger = trigger ? (
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger asChild onClick={() => setOpen(true)}>{trigger}</DialogTrigger>
   ) : (
-      <Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Link</Button>
+      <Button size="sm" onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />Add Link</Button>
   )
 
-  const isGoogleLink = url.includes('docs.google.com') || url.includes('sheets.google.com') || url.includes('slides.google.com');
+  const isEmbeddable = type === 'embed';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {dialogTrigger}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Link' : 'Add New Link'}</DialogTitle>
+          <DialogTitle>{isEditing ? `Edit ${isPersonalLink ? 'Personal' : ''} Link` : `Add New ${isPersonalLink ? 'Personal' : ''} Link`}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
@@ -169,14 +175,14 @@ export default function AddLinkButton({ db, section, linkToEdit = null, onLinkAd
                         <SelectValue placeholder="Select a type" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="embed">Embeddable (Google Sheet)</SelectItem>
+                        <SelectItem value="embed">Embeddable (e.g. Google Sheet)</SelectItem>
                         <SelectItem value="external">External Portal</SelectItem>
-                        <SelectItem value="protocol">App Protocol (ms-phone:)</SelectItem>
+                        <SelectItem value="protocol">App Protocol (e.g. ms-phone:)</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            {isGoogleLink && isPersonalLink && (
+            {isEmbeddable && (
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="openType" className="text-right">Open In</Label>
                     <Select value={openType} onValueChange={setOpenType}>

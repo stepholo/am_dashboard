@@ -28,7 +28,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
         );
     }, [db, sectionSlug, user]);
     
-    const { data: links, isLoading: linksLoading } = useCollection<DashboardLink>(linksQuery);
+    const { data: links, isLoading: linksLoading, error } = useCollection<DashboardLink>(linksQuery);
 
     const fetchLinks = () => {
         // This function can be used to trigger a re-fetch if useCollection doesn't automatically update
@@ -46,7 +46,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{sectionName}</h1>
-                        {canAddLinks && db && <AddLinkButton db={db} section={sectionSlug} onLinkAdded={fetchLinks} />}
+                        {canAddLinks && db && user && <AddLinkButton db={db} user={user} section={sectionSlug} onLinkAdded={fetchLinks} />}
                     </div>
                     
                     {linksLoading ? (
