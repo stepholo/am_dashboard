@@ -8,15 +8,13 @@ import { Skeleton } from '../ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { DashboardProvider } from '@/context/DashboardContext';
 import ContentView from './ContentView';
 import { useDashboard } from '@/hooks/useDashboard';
 import { collection, query, orderBy } from 'firebase/firestore';
 
-function DashboardGrid() {
+function DashboardGrid({ sectionSlug }: { sectionSlug: string; }) {
   const { user } = useAuth();
   const db = useFirestore();
-  const { viewMode } = useDashboard();
   
   const linksQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -37,17 +35,14 @@ function DashboardGrid() {
     return acc;
   }, {} as Record<string, DashboardLink[]>);
 
-  if (viewMode !== 'grid') {
-    return null;
-  }
 
   return (
     <div className="flex flex-col gap-8 p-4 sm:p-6">
-      {linksBySection && Object.entries(linksBySection).map(([sectionSlug, links]) => (
-        <div key={sectionSlug} className="flex flex-col gap-4">
+      {linksBySection && Object.entries(linksBySection).map(([currentSectionSlug, links]) => (
+        <div key={currentSectionSlug} className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{sectionSlug.replace(/-/g, ' ')}</h1>
-            {user?.role === 'admin' && db && <AddLinkButton db={db} section={sectionSlug} onLinkAdded={fetchLinks} />}
+            <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{currentSectionSlug.replace(/-/g, ' ')}</h1>
+            {user?.role === 'admin' && db && <AddLinkButton db={db} section={currentSectionSlug} onLinkAdded={fetchLinks} />}
           </div>
           
           {linksLoading ? (
@@ -72,20 +67,13 @@ function DashboardGrid() {
   );
 }
 
-function DashboardContentArea() {
-    const { viewMode } = useDashboard();
-    if (viewMode === 'grid') {
-        return <DashboardGrid />;
-    }
-    return <ContentView />;
-}
 
 export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string; }) {
-    return (
-        <DashboardProvider>
-           <Suspense fallback={<p>Loading...</p>}>
-             <DashboardContentArea />
-           </Suspense>
-        </DashboardProvider>
-    )
+    const { viewMode } = useDashboard();
+
+    if (viewMode !== 'grid') {
+        return <ContentView />;
+    }
+    
+    return <DashboardGrid sectionSlug={sectionSlug} />;
 }
