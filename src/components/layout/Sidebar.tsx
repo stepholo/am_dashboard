@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarHeader,
@@ -71,12 +71,19 @@ function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string
 
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { state, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
     setOpenMobile(false);
+  }
+
+  const handleSectionClick = (slug: string) => {
+      if (isCollapsed) {
+          router.push(`/${slug}`);
+      }
   }
 
   return (
@@ -99,16 +106,17 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
               <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
                  <SidebarMenuItem>
                     <AccordionTrigger 
+                      onClick={() => handleSectionClick(section.slug)}
                       className={cn(
                         "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
                         isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
                         isCollapsed ? "!size-8 !p-2 justify-center" : "",
                       )}
                     >
-                        <Link href={`/${section.slug}`} onClick={(e) => { if(!isCollapsed) { e.preventDefault(); e.stopPropagation(); } }} className="flex flex-1 items-center gap-2">
+                        <div onClick={() => router.push(`/${section.slug}`)} className="flex flex-1 items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
-                        </Link>
+                        </div>
                     </AccordionTrigger>
                  </SidebarMenuItem>
                  {!isCollapsed && (
