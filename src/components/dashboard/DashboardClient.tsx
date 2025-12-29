@@ -28,10 +28,12 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
         );
     }, [db, sectionSlug, user]);
     
-    const { data: links, isLoading: linksLoading, error } = useCollection<DashboardLink>(linksQuery);
+    const { data: links, isLoading, error } = useCollection<DashboardLink>(linksQuery);
 
     const refreshLinks = () => {
         // useCollection now handles this automatically.
+        // This function's presence is to re-trigger things if needed,
+        // but for now, it can be empty as the hook handles real-time updates.
     }
 
     if (viewMode !== 'grid') {
