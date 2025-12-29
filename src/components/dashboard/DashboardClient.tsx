@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { DashboardLink } from '@/lib/types';
@@ -18,12 +17,16 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
 
     const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
+        if (sectionSlug === 'personal-links') {
+            if (!user) return null;
+            return query(collection(db, 'users', user.uid, 'dashboardLinks'), orderBy('name', 'asc'));
+        }
         return query(
             collection(db, 'dashboardLinks'),
             where('section', '==', sectionSlug),
             orderBy('order', 'asc')
         );
-    }, [db, sectionSlug]);
+    }, [db, sectionSlug, user]);
     
     const { data: links, isLoading: linksLoading } = useCollection<DashboardLink>(linksQuery);
 
@@ -35,13 +38,15 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
         return <ContentView />;
     }
     
+    const canAddLinks = user?.role === 'admin' || sectionSlug === 'personal-links';
+
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex flex-col gap-8 p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{sectionName}</h1>
-                        {user?.role === 'admin' && db && <AddLinkButton db={db} section={sectionSlug} onLinkAdded={fetchLinks} />}
+                        {canAddLinks && db && <AddLinkButton db={db} section={sectionSlug} onLinkAdded={fetchLinks} />}
                     </div>
                     
                     {linksLoading ? (
@@ -51,7 +56,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                     ) : (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {links?.map(link => (
-                                <LinkCard key={link.id} link={link} onUpdate={fetchLinks} />
+                                <LinkCard key={link.id} link={link} onUpdate={fetchLinks} isPersonal={sectionSlug === 'personal-links'} />
                             ))}
                         </div>
                     )}

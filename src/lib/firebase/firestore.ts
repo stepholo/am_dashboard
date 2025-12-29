@@ -82,3 +82,20 @@ export async function deleteLink(db: Firestore, id: string) {
     const linkDoc = doc(db, 'dashboardLinks', id);
     return await deleteDoc(linkDoc);
 }
+
+
+// User specific links
+export async function addUserLink(db: Firestore, userId: string, link: Omit<DashboardLink, 'id'>) {
+    const userLinksCollection = collection(db, 'users', userId, 'dashboardLinks');
+    return await addDoc(userLinksCollection, link);
+}
+
+export async function updateUserLink(db: Firestore, userId: string, linkId: string, data: Partial<DashboardLink>) {
+    const linkDoc = doc(db, 'users', userId, 'dashboardLinks', linkId);
+    return await updateDoc(linkDoc, data);
+}
+
+export async function deleteUserLink(db: Firestore, userId: string, linkId: string) {
+    const linkDoc = doc(db, 'users', userId, 'dashboardLinks', linkId);
+    return await deleteDoc(linkDoc);
+}

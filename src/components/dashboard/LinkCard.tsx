@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -8,6 +7,7 @@ import {
   CardTitle,
   CardFooter,
   CardContent,
+  CardDescription
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,19 +21,23 @@ import { MoreVertical, ExternalLink, Pencil, Trash2, LayoutDashboard } from 'luc
 import type { DashboardLink } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import AddLinkButton from '../admin/AddLinkButton';
-import { deleteLink } from '@/lib/firebase/firestore';
+import { deleteLink, deleteUserLink } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { useDashboard } from '@/hooks/useDashboard';
 
 
-export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUpdate: () => void; }) {
+export default function LinkCard({ link, onUpdate, isPersonal = false }: { link: DashboardLink; onUpdate: () => void; isPersonal?: boolean; }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const db = useFirestore();
   const { openInDashboard } = useDashboard();
 
   const handleOpen = () => {
+    if ((link as any).openType === 'new-tab') {
+        window.open(link.url, '_blank');
+        return;
+    }
     if (link.type === 'embed') {
       openInDashboard({ id: link.id, url: link.url, name: link.name });
     } else if (link.type === 'protocol') {
@@ -44,13 +48,17 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
   };
 
   const handleDelete = async () => {
-    if (!db) {
-        toast({ variant: 'destructive', title: "Database connection not found." });
+    if (!db || !user) {
+        toast({ variant: 'destructive', title: "Database connection not found or user not logged in." });
         return;
     }
     if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
         try {
-            await deleteLink(db, link.id);
+            if (isPersonal) {
+                await deleteUserLink(db, user.uid, link.id);
+            } else {
+                await deleteLink(db, link.id);
+            }
             toast({ title: "Link deleted successfully" });
             onUpdate();
         } catch (error) {
@@ -58,6 +66,8 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
         }
     }
   }
+  
+  const canEdit = isPersonal || user?.role === 'admin';
 
   return (
     <Card className="flex flex-col justify-between shadow-md transition-shadow hover:shadow-xl overflow-hidden">
@@ -76,12 +86,15 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
         )}
       <div className='flex flex-col flex-1 justify-between p-4'>
         <CardHeader className="flex-row items-start justify-between pb-2 p-0">
-            <CardTitle className="text-base font-medium leading-snug">
-            {link.name}
-            </CardTitle>
+            <div className="flex-1">
+                <CardTitle className="text-base font-medium leading-snug">
+                {link.name}
+                </CardTitle>
+                {(link as any).description && <CardDescription className="text-xs mt-1">{(link as any).description}</CardDescription>}
+            </div>
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 -mt-1 -mr-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 -mt-1 -mr-1 ml-2">
                 <MoreVertical className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
@@ -98,7 +111,7 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
                     <ExternalLink className="mr-2 h-4 w-4" />
                     <span>Open in New Tab</span>
                 </DropdownMenuItem>
-                {user?.role === 'admin' && db && (
+                {canEdit && db && (
                     <>
                         <DropdownMenuSeparator />
                         <AddLinkButton db={db} linkToEdit={link} onLinkAdded={onUpdate} trigger={
@@ -106,7 +119,7 @@ export default function LinkCard({ link, onUpdate }: { link: DashboardLink; onUp
                                 <Pencil className="mr-2 h-4 w-4" />
                                 <span>Edit</span>
                             </DropdownMenuItem>
-                        } />
+                        } section={isPersonal ? 'personal-links' : link.section} />
                         <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
                             <Trash2 className="mr-2 h-4 w-4" />
                             <span>Delete</span>

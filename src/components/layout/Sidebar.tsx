@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -22,15 +21,21 @@ import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
+    const { user } = useAuth();
     const { openInDashboard } = useDashboard();
 
     const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
+        if (sectionSlug === 'personal-links') {
+            if (!user) return null;
+            return query(collection(db, 'users', user.uid, 'dashboardLinks'), orderBy('name'));
+        }
         return query(collection(db, 'dashboardLinks'), where('section', '==', sectionSlug), orderBy('order'));
-    }, [db, sectionSlug]);
+    }, [db, sectionSlug, user]);
 
     const { data: links, isLoading } = useCollection<DashboardLink>(linksQuery);
 
@@ -81,9 +86,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
   }
 
   const handleSectionClick = (slug: string) => {
-      if (isCollapsed) {
-          router.push(`/${slug}`);
-      }
+      router.push(`/${slug}`);
   }
 
   return (
@@ -106,14 +109,14 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
               <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
                  <SidebarMenuItem>
                     <AccordionTrigger 
-                      onClick={() => handleSectionClick(section.slug)}
+                      onClick={() => !isCollapsed && handleSectionClick(section.slug)}
                       className={cn(
                         "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
                         isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
                         isCollapsed ? "!size-8 !p-2 justify-center" : "",
                       )}
                     >
-                        <div onClick={() => router.push(`/${section.slug}`)} className="flex flex-1 items-center gap-2">
+                        <div onClick={() => handleSectionClick(section.slug)} className="flex flex-1 items-center gap-2">
                             <Icon className="h-4 w-4 shrink-0" />
                             <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
                         </div>

@@ -15,4 +15,6 @@ export type DashboardLink = {
   order: number;
   imageUrl?: string;
   imageHint?: string;
+  description?: string;
+  openType?: 'dashboard' | 'split-screen' | 'new-tab';
 };

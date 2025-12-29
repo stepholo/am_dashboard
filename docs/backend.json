@@ -43,6 +43,47 @@
         "openType"
       ]
     },
+    "UserDashboardLink": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserDashboardLink",
+      "type": "object",
+      "description": "Represents a personalized link created by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserDashboardLink."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the link."
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL the link points to.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the link."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of link (e.g., Embeddable, External).",
+          "enum": ["embed", "external", "protocol"]
+        },
+        "openType": {
+          "type": "string",
+          "description": "How the link should open.",
+          "enum": ["dashboard", "split-screen", "new-tab"]
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of an automatically generated image for the link."
+        }
+      },
+      "required": ["id", "name", "url", "type"]
+    },
     "UserRole": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserRole",
@@ -131,6 +172,18 @@
             "schema": { "$ref": "#/backend/entities/UserProfile" },
             "description": "Stores user profile information.",
             "params": [{ "name": "uid", "description": "The Firebase Auth UID of the user." }]
+        }
+      },
+      {
+        "path": "/users/{uid}/dashboardLinks/{linkId}",
+        "definition": {
+            "entityName": "UserDashboardLink",
+            "schema": { "$ref": "#/backend/entities/UserDashboardLink" },
+            "description": "Stores user-specific dashboard links.",
+            "params": [
+                { "name": "uid", "description": "The Firebase Auth UID of the user." },
+                { "name": "linkId", "description": "The unique ID for the user's link." }
+            ]
         }
       }
     ],

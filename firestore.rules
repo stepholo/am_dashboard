@@ -34,5 +34,10 @@ service cloud.firestore {
        allow read, create, update: if isSignedIn() && isOwner(uid);
        allow delete: if isAdmin(); // Only admins can delete user profiles
     }
+    
+    match /users/{uid}/dashboardLinks/{linkId} {
+        // Any signed-in user can manage their own links.
+        allow read, write, delete: if isSignedIn() && isOwner(uid);
+    }
   }
 }
