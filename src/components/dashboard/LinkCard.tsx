@@ -74,6 +74,7 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
         }
         deleteLink(db, link.id);
     }
+    
     toast({ title: `"${link.name}" was successfully deleted.` });
     onUpdate();
   }

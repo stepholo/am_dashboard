@@ -30,8 +30,8 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
     
     const { data: links, isLoading: linksLoading, error } = useCollection<DashboardLink>(linksQuery);
 
-    const fetchLinks = () => {
-        // This function can be used to trigger a re-fetch if useCollection doesn't automatically update
+    const refreshLinks = () => {
+        // useCollection now handles this automatically.
     }
 
     if (viewMode !== 'grid') {
@@ -46,7 +46,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{sectionName}</h1>
-                        {canAddLinks && db && user && <AddLinkButton db={db} user={user} section={sectionSlug} onLinkAdded={fetchLinks} />}
+                        {canAddLinks && db && user && <AddLinkButton db={db} user={user} section={sectionSlug} onLinkAdded={refreshLinks} />}
                     </div>
                     
                     {linksLoading ? (
@@ -56,7 +56,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                     ) : (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {links?.map(link => (
-                                <LinkCard key={link.id} link={link} onUpdate={fetchLinks} isPersonal={sectionSlug === 'personal-links'} />
+                                <LinkCard key={link.id} link={link} isPersonal={sectionSlug === 'personal-links'} onUpdate={refreshLinks}/>
                             ))}
                         </div>
                     )}
