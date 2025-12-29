@@ -65,7 +65,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
   }, [open, linkToEdit, section, isPersonalLink]);
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !user) {
       toast({
@@ -88,11 +88,11 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
         if (isPersonalLink) {
             linkData.description = description;
             if (isEditing && linkToEdit) {
-                await updateUserLink(db, user.uid, linkToEdit.id, linkData);
-                toast({ title: 'Personal link updated successfully' });
+                updateUserLink(db, user.uid, linkToEdit.id, linkData);
+                toast({ title: 'Personal link update initiated.' });
             } else {
-                await addUserLink(db, user.uid, linkData);
-                toast({ title: 'Personal link added successfully' });
+                addUserLink(db, user.uid, linkData);
+                toast({ title: 'Personal link creation initiated.' });
             }
         } else {
              if (user.role !== 'admin') {
@@ -102,11 +102,11 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
             }
             linkData.section = linkSection;
             if (isEditing && linkToEdit) {
-                await updateLink(db, linkToEdit.id, linkData);
-                toast({ title: 'Link updated successfully' });
+                updateLink(db, linkToEdit.id, linkData);
+                toast({ title: 'Link update initiated.' });
             } else {
-                await addLink(db, linkData as Omit<DashboardLink, 'id'>); 
-                toast({ title: 'Link added successfully' });
+                addLink(db, linkData as Omit<DashboardLink, 'id'>); 
+                toast({ title: 'Link creation initiated.' });
             }
         }
         
@@ -115,7 +115,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
     } catch (error) {
         toast({
             variant: 'destructive',
-            title: `Error ${isEditing ? 'updating' : 'adding'} link`,
+            title: `Error processing link`,
             description: (error as Error).message,
         });
     } finally {
@@ -212,5 +212,3 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
     </Dialog>
   );
 }
-
-    

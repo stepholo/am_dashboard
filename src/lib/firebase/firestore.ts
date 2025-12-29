@@ -7,15 +7,12 @@ import {
   getDocs,
   writeBatch,
   doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
   Firestore,
-  getDoc,
 } from 'firebase/firestore';
 import type { DashboardLink } from '../types';
 import { seedData } from '../data';
 import { placeholderImages } from '../placeholder-images';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 // This flag will be stored in Firestore to prevent re-seeding.
 const SEED_FLAG_DOC = 'internal/seedingFlags';
@@ -75,40 +72,40 @@ const getRandomPlaceholderImage = () => {
 }
 
 // Add a new link
-export async function addLink(db: Firestore, link: Omit<DashboardLink, 'id'>) {
+export function addLink(db: Firestore, link: Omit<DashboardLink, 'id'>) {
     const linksCollection = collection(db, 'dashboardLinks');
     const { imageUrl, imageHint } = getRandomPlaceholderImage();
     const newLink = { ...link, imageUrl, imageHint };
-    return await addDoc(linksCollection, newLink);
+    addDocumentNonBlocking(linksCollection, newLink);
 }
 
 // Update an existing link
-export async function updateLink(db: Firestore, id: string, data: Partial<DashboardLink>) {
+export function updateLink(db: Firestore, id: string, data: Partial<DashboardLink>) {
     const linkDoc = doc(db, 'dashboardLinks', id);
-    return await updateDoc(linkDoc, data);
+    updateDocumentNonBlocking(linkDoc, data);
 }
 
 // Delete a link
-export async function deleteLink(db: Firestore, id: string) {
+export function deleteLink(db: Firestore, id: string) {
     const linkDoc = doc(db, 'dashboardLinks', id);
-    return await deleteDoc(linkDoc);
+    deleteDocumentNonBlocking(linkDoc);
 }
 
 
 // User specific links
-export async function addUserLink(db: Firestore, userId: string, link: Partial<Omit<DashboardLink, 'id'>>) {
+export function addUserLink(db: Firestore, userId: string, link: Partial<Omit<DashboardLink, 'id'>>) {
     const userLinksCollection = collection(db, 'users', userId, 'dashboardLinks');
     const { imageUrl, imageHint } = getRandomPlaceholderImage();
     const newLink = { ...link, imageUrl, imageHint };
-    return await addDoc(userLinksCollection, newLink);
+    addDocumentNonBlocking(userLinksCollection, newLink);
 }
 
-export async function updateUserLink(db: Firestore, userId: string, linkId: string, data: Partial<DashboardLink>) {
+export function updateUserLink(db: Firestore, userId: string, linkId: string, data: Partial<DashboardLink>) {
     const linkDoc = doc(db, 'users', userId, 'dashboardLinks', linkId);
-    return await updateDoc(linkDoc, data);
+    updateDocumentNonBlocking(linkDoc, data);
 }
 
-export async function deleteUserLink(db: Firestore, userId: string, linkId: string) {
+export function deleteUserLink(db: Firestore, userId: string, linkId: string) {
     const linkDoc = doc(db, 'users', userId, 'dashboardLinks', linkId);
-    return await deleteDoc(linkDoc);
+    deleteDocumentNonBlocking(linkDoc);
 }

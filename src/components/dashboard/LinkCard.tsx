@@ -48,7 +48,7 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!db || !user) {
         toast({ variant: 'destructive', title: "Database connection not found or user not logged in." });
         return;
@@ -56,11 +56,11 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
     if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
         try {
             if (isPersonal) {
-                await deleteUserLink(db, user.uid, link.id);
+                deleteUserLink(db, user.uid, link.id);
             } else {
-                await deleteLink(db, link.id);
+                deleteLink(db, link.id);
             }
-            toast({ title: "Link deleted successfully" });
+            toast({ title: "Link deletion initiated." });
             onUpdate();
         } catch (error) {
             toast({ variant: 'destructive', title: "Error deleting link", description: (error as Error).message });
@@ -139,5 +139,3 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
     </Card>
   );
 }
-
-    
