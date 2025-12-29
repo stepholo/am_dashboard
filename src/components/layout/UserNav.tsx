@@ -12,19 +12,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, ChevronsLeftRight } from 'lucide-react';
+import { LogOut, ChevronsLeftRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
 import { useAuth } from '@/firebase';
+import { cn } from '@/lib/utils';
 
 export default function UserNav({ user }: { user: UserProfile }) {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const auth = useAuth();
+  const isCollapsed = state === 'collapsed';
 
   const handleSignOut = () => {
     firebaseSignOut(auth);
   }
 
-  if (state === 'collapsed') {
+  if (isCollapsed) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -74,19 +76,10 @@ export default function UserNav({ user }: { user: UserProfile }) {
                 <span className="text-xs leading-none text-muted-foreground">{user.email}</span>
             </div>
         </div>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <ChevronsLeftRight className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                 <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar}>
+            <ChevronsLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+            <span className="sr-only">Toggle sidebar</span>
+        </Button>
     </div>
   );
 }
