@@ -28,21 +28,38 @@ export default function UserNav({ user }: { user: UserProfile }) {
     }
   };
 
+  const userAvatar = (
+    <Avatar className={cn("h-9 w-9", isCollapsed && "h-10 w-10")}>
+      <AvatarImage src={user.photoURL} alt={user.displayName} />
+      <AvatarFallback>
+        {user.displayName
+          .split(' ')
+          .map((n) => n[0])
+          .join('')}
+      </AvatarFallback>
+    </Avatar>
+  );
+
   return (
-    <div className={cn("flex w-full items-center", isCollapsed ? "justify-center" : "justify-between rounded-md p-2 hover:bg-sidebar-accent")}>
+    <div className={cn(
+      "flex w-full items-center", 
+      isCollapsed ? "justify-center" : "justify-between"
+    )}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={cn("relative rounded-full", isCollapsed ? "h-10 w-10" : "h-9 w-9 p-0")}>
-                <Avatar className="h-9 w-9">
-                <AvatarImage src={user.photoURL} alt={user.displayName} />
-                <AvatarFallback>
-                    {user.displayName
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </AvatarFallback>
-                </Avatar>
+          {isCollapsed ? (
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+              {userAvatar}
             </Button>
+          ) : (
+            <Button variant="ghost" className="flex items-center gap-3 rounded-md p-2 w-full justify-start h-auto">
+               {userAvatar}
+               <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium leading-none">{user.displayName}</span>
+                  <span className="text-xs leading-none text-muted-foreground">{user.email}</span>
+              </div>
+            </Button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
@@ -59,16 +76,7 @@ export default function UserNav({ user }: { user: UserProfile }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {!isCollapsed && (
-        <div className="flex items-center gap-3">
-             <div className="flex flex-col">
-                <span className="text-sm font-medium leading-none">{user.displayName}</span>
-                <span className="text-xs leading-none text-muted-foreground">{user.email}</span>
-            </div>
-        </div>
-      )}
-
-      <Button variant="ghost" size="icon" className={cn("h-8 w-8", isCollapsed && "mt-2")} onClick={toggleSidebar}>
+      <Button variant="ghost" size="icon" className={cn("h-8 w-8", isCollapsed ? "mt-2" : "flex")} onClick={toggleSidebar}>
         <ChevronsLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
         <span className="sr-only">Toggle sidebar</span>
       </Button>
