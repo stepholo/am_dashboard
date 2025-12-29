@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ALLOWED_DOMAIN } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/Logo';
+import TractorBackground from '@/components/TractorBackground';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -54,11 +55,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className="flex min-h-screen items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1620480830953-27c15e45c71a?q=80&w=1920&auto=format&fit=crop')" }}
-    >
-      <div className="absolute inset-0 bg-black/50" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
+      <TractorBackground className="absolute inset-0 h-full w-full" />
       <Card className="z-10 w-full max-w-sm shadow-xl">
         <CardHeader className="flex flex-col items-center text-center">
             <div className="mb-4 h-16 w-auto text-primary">
