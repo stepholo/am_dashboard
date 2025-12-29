@@ -54,14 +54,15 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
 
   useEffect(() => {
     if (open) {
+      const currentSection = isPersonalLink ? 'personal-links' : (linkToEdit?.section || section || SECTIONS[0].slug);
       setName(linkToEdit?.name || '');
       setUrl(linkToEdit?.url || '');
       setDescription((linkToEdit as any)?.description || '');
-      setLinkSection(linkToEdit?.section || section || SECTIONS[0].slug);
+      setLinkSection(currentSection);
       setType(linkToEdit?.type || 'embed');
       setOpenType(linkToEdit?.openType || 'dashboard');
     }
-  }, [open, linkToEdit, section]);
+  }, [open, linkToEdit, section, isPersonalLink]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
