@@ -16,7 +16,7 @@ import { SECTIONS } from "@/lib/constants";
 import UserNav from "./UserNav";
 import type { UserProfile, DashboardLink } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 import { ChevronsRight } from "lucide-react";
@@ -85,7 +85,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
         <Link href="/" className="flex items-center gap-2.5">
           <Logo className="h-8 w-auto text-primary" />
           <span className="text-xl font-semibold tracking-tight font-headline group-data-[collapsible=icon]:hidden">
-            TractorLink
+            AM Dashboard
           </span>
         </Link>
       </SidebarHeader>

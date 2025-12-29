@@ -26,7 +26,7 @@ export const useAuth = () => {
                         const newUserProfile: UserProfile = {
                             uid: fbUser.uid,
                             email: fbUser.email,
-                            displayName: fbUser.displayName || 'TractorLink User',
+                            displayName: fbUser.displayName || 'AM Dashboard User',
                             photoURL: fbUser.photoURL || '',
                             role: fbUser.email === ADMIN_EMAIL ? 'admin' : 'viewer',
                         };

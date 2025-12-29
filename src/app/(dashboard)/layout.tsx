@@ -29,7 +29,7 @@ export default function DashboardLayout({
       <div className="flex h-screen w-screen items-center justify-center bg-background">
          <div className="flex flex-col items-center gap-4">
             <Logo className="h-16 w-auto" />
-            <p className="text-muted-foreground">Loading TractorLink...</p>
+            <p className="text-muted-foreground">Loading AM Dashboard...</p>
         </div>
       </div>
     );
