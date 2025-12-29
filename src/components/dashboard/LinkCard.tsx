@@ -54,17 +54,18 @@ export default function LinkCard({ link, onUpdate, isPersonal = false }: { link:
         return;
     }
     if (window.confirm(`Are you sure you want to delete "${link.name}"?`)) {
-        try {
-            if (isPersonal) {
-                deleteUserLink(db, user.uid, link.id);
-            } else {
-                deleteLink(db, link.id);
+        if (isPersonal) {
+            deleteUserLink(db, user.uid, link.id);
+        } else {
+            if (user.role !== 'admin') {
+                toast({ variant: 'destructive', title: "You don't have permission to delete this link." });
+                return;
             }
-            toast({ title: "Link deletion initiated." });
-            onUpdate();
-        } catch (error) {
-            toast({ variant: 'destructive', title: "Error deleting link", description: (error as Error).message });
+            deleteLink(db, link.id);
         }
+        toast({ title: "Link deletion initiated." });
+        // Force a re-fetch of the links after deletion
+        onUpdate();
     }
   }
   
