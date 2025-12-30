@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -11,17 +12,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/Logo";
-import { SECTIONS } from "@/lib/constants";
 import UserNav from "./UserNav";
-import type { UserProfile, DashboardLink } from "@/lib/types";
+import type { UserProfile, DashboardLink, Section } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, orderBy, where } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
-import { ChevronsRight } from "lucide-react";
+import { ChevronsRight, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/hooks/useAuth";
+import * as Icons from 'lucide-react';
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
@@ -74,11 +75,23 @@ function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string
     )
 }
 
+const getIcon = (iconName: string): LucideIcon => {
+  const Icon = (Icons as any)[iconName];
+  if (Icon) {
+    return Icon;
+  }
+  return Icons.Settings; // Fallback icon
+};
+
+
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const router = useRouter();
   const { state, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
+  
+  const db = useFirestore();
+  const { data: sections, isLoading: sectionsLoading } = useCollection<Section>(db ? query(collection(db, 'sections'), orderBy('order', 'asc')) : null);
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
@@ -102,34 +115,38 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
       
       <SidebarMenu className="flex-1 p-2">
         <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
-          {SECTIONS.map((section) => {
-            const Icon = section.icon;
-            const isActive = pathname.startsWith(`/${section.slug}`);
-            return (
-              <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
-                 <SidebarMenuItem>
-                    <AccordionTrigger 
-                      onClick={() => !isCollapsed && handleSectionClick(section.slug)}
-                      className={cn(
-                        "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
-                        isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
-                        isCollapsed ? "!size-8 !p-2 justify-center" : "",
-                      )}
-                    >
-                        <div onClick={() => handleSectionClick(section.slug)} className="flex flex-1 items-center gap-2">
-                            <Icon className="h-4 w-4 shrink-0" />
-                            <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
-                        </div>
-                    </AccordionTrigger>
-                 </SidebarMenuItem>
-                 {!isCollapsed && (
-                    <AccordionContent className="pl-8 pr-2">
-                       <SidebarSectionLinks sectionSlug={section.slug} onLinkClick={handleLinkClick} />
-                    </AccordionContent>
-                 )}
-              </AccordionItem>
-            );
-          })}
+          {sectionsLoading ? (
+            [...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full mb-1" />)
+          ) : (
+            sections?.map((section) => {
+              const Icon = getIcon(section.icon);
+              const isActive = pathname.startsWith(`/${section.slug}`);
+              return (
+                <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
+                   <SidebarMenuItem>
+                      <AccordionTrigger 
+                        onClick={() => !isCollapsed && handleSectionClick(section.slug)}
+                        className={cn(
+                          "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
+                          isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
+                          isCollapsed ? "!size-8 !p-2 justify-center" : "",
+                        )}
+                      >
+                          <div onClick={() => handleSectionClick(section.slug)} className="flex flex-1 items-center gap-2">
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
+                          </div>
+                      </AccordionTrigger>
+                   </SidebarMenuItem>
+                   {!isCollapsed && (
+                      <AccordionContent className="pl-8 pr-2">
+                         <SidebarSectionLinks sectionSlug={section.slug} onLinkClick={handleLinkClick} />
+                      </AccordionContent>
+                   )}
+                </AccordionItem>
+              );
+            })
+          )}
         </Accordion>
       </SidebarMenu>
 

@@ -1,7 +1,6 @@
 
 "use client";
 import { redirect, useSearchParams } from 'next/navigation';
-import { SECTIONS } from '@/lib/constants';
 import { useEffect } from 'react';
 
 export default function Home() {
@@ -12,7 +11,8 @@ export default function Home() {
   // Otherwise, we redirect to the default section.
   useEffect(() => {
     if (!view) {
-      redirect(`/${SECTIONS[0].slug}`);
+      // Redirect to the default section slug since sections are now dynamic.
+      redirect(`/payg-operations`);
     }
   }, [view]);
 

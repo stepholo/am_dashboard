@@ -8,48 +8,57 @@ import {
   writeBatch,
   doc,
   Firestore,
+  addDoc,
+  updateDoc,
 } from 'firebase/firestore';
-import type { DashboardLink } from '../types';
+import type { DashboardLink, Section } from '../types';
 import { seedData } from '../data';
 import { placeholderImages } from '../placeholder-images';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { initialSections } from '../constants';
 
-// This flag will be stored in Firestore to prevent re-seeding.
 const SEED_FLAG_DOC = 'internal/seedingFlags';
 
-// Function to seed initial data. This will delete all existing links.
 export async function seedInitialData(db: Firestore) {
+    const sectionsCollectionRef = collection(db, 'sections');
+    const sectionsSnap = await getDocs(query(sectionsCollectionRef));
     const linksCollectionRef = collection(db, 'dashboardLinks');
-    const existingLinksSnap = await getDocs(query(linksCollectionRef));
-
+    const linksSnap = await getDocs(query(linksCollectionRef));
+    
     const batch = writeBatch(db);
 
-    // Delete all existing links to ensure a clean slate
-    existingLinksSnap.forEach(doc => {
-        batch.delete(doc.ref);
-    });
-
-    // Add all links from the seed data with the correct image info and order
-    seedData.forEach((link, index) => {
-        const docRef = doc(linksCollectionRef);
-        batch.set(docRef, { 
-            ...link, 
-            imageUrl: link.imageUrl || '',
-            imageHint: link.imageHint || '',
-            order: index 
+    // Only seed if both are empty
+    if (sectionsSnap.empty && linksSnap.empty) {
+        console.log('No data found. Seeding initial sections and links...');
+        
+        // Seed Sections
+        initialSections.forEach(section => {
+            const sectionRef = doc(sectionsCollectionRef, section.slug);
+            batch.set(sectionRef, section);
         });
-    });
-    
-    // Set a marker to indicate seeding is done to prevent re-seeding.
-    const seedMarkerRef = doc(db, SEED_FLAG_DOC);
-    batch.set(seedMarkerRef, { updatedWithImagesOn: new Date().toISOString() });
 
-    await batch.commit();
-    console.log('Database seeding complete.');
+        // Seed Links
+        seedData.forEach((link, index) => {
+            const docRef = doc(linksCollectionRef);
+            batch.set(docRef, { 
+                ...link, 
+                imageUrl: link.imageUrl || '',
+                imageHint: link.imageHint || '',
+                order: index 
+            });
+        });
+        
+        const seedMarkerRef = doc(db, SEED_FLAG_DOC, 'initialSeed');
+        batch.set(seedMarkerRef, { completedOn: new Date().toISOString() });
+
+        await batch.commit();
+        console.log('Database seeding complete.');
+    } else {
+        console.log('Data already exists. Skipping initial seed.');
+    }
 }
 
 
-// Get all links for a specific section, and seed if empty
 export async function getLinksForSection(db: Firestore, section: string): Promise<DashboardLink[]> {
   const linksCollection = collection(db, 'dashboardLinks');
   
@@ -108,4 +117,18 @@ export function updateUserLink(db: Firestore, userId: string, linkId: string, da
 export function deleteUserLink(db: Firestore, userId: string, linkId: string) {
     const linkDoc = doc(db, 'users', userId, 'dashboardLinks', linkId);
     deleteDocumentNonBlocking(linkDoc);
+}
+
+// Section Management
+export async function addSection(db: Firestore, sectionData: Omit<Section, 'id'>) {
+    const sectionsCollection = collection(db, 'sections');
+    // create slug from name
+    const slug = sectionData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    const dataWithSlug = { ...sectionData, slug };
+    return await addDoc(sectionsCollection, dataWithSlug);
+}
+
+export async function updateSection(db: Firestore, id: string, data: Partial<Section>) {
+    const sectionDoc = doc(db, 'sections', id);
+    return await updateDoc(sectionDoc, data);
 }

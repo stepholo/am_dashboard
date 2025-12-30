@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useUser, useFirestore, useAuth as useFirebaseAuth } from '@/firebase';
@@ -7,6 +8,7 @@ import { ADMIN_EMAIL, ALLOWED_DOMAIN } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { signOut } from '@/lib/firebase/auth';
+import { seedInitialData } from '@/lib/firebase/firestore';
 
 export const useAuth = () => {
     const { user: firebaseUser, isUserLoading } = useUser();
@@ -17,7 +19,7 @@ export const useAuth = () => {
 
     useEffect(() => {
         const handleAuth = async (fbUser: User | null) => {
-            if (fbUser) {
+            if (fbUser && firestore) {
                 if (fbUser.email && fbUser.email.endsWith(`@${ALLOWED_DOMAIN}`)) {
                     const userDocRef = doc(firestore, 'users', fbUser.uid);
                     let userDoc = await getDoc(userDocRef);
@@ -32,12 +34,25 @@ export const useAuth = () => {
                         };
                         await setDoc(userDocRef, newUserProfile);
                         setUserProfile(newUserProfile);
+                        // Seed data for the first admin user
+                        if (newUserProfile.role === 'admin') {
+                            await seedInitialData(firestore);
+                        }
                     } else {
                         const existingProfile = userDoc.data() as UserProfile;
-                        const currentRole = existingProfile.email === ADMIN_EMAIL ? 'admin' : existingProfile.role;
-                        if (currentRole !== existingProfile.role) {
-                            await setDoc(userDocRef, { role: currentRole }, { merge: true });
-                            setUserProfile({ ...existingProfile, role: currentRole });
+                        let needsUpdate = false;
+                        const updatedProfile = { ...existingProfile };
+
+                        // Ensure role is correct based on email
+                        const correctRole = existingProfile.email === ADMIN_EMAIL ? 'admin' : 'viewer';
+                        if (existingProfile.role !== correctRole) {
+                            updatedProfile.role = correctRole;
+                            needsUpdate = true;
+                        }
+
+                        if (needsUpdate) {
+                            await setDoc(userDocRef, updatedProfile, { merge: true });
+                            setUserProfile(updatedProfile);
                         } else {
                             setUserProfile(existingProfile);
                         }

@@ -22,12 +22,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { addLink, updateLink, addUserLink, updateUserLink } from '@/lib/firebase/firestore';
-import { SECTIONS } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import type { DashboardLink, UserProfile } from '@/lib/types';
+import type { DashboardLink, UserProfile, Section } from '@/lib/types';
 import { Plus } from 'lucide-react';
 import { Firestore } from 'firebase/firestore';
 import { Textarea } from '../ui/textarea';
+import { useCollection, useFirestore as useDb } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 
 interface LinkEditorProps {
     db: Firestore;
@@ -38,8 +39,10 @@ interface LinkEditorProps {
     trigger?: React.ReactNode;
 }
 
-export default function AddLinkButton({ db, user, section, linkToEdit = null, onLinkAdded, trigger }: LinkEditorProps) {
+export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdded, trigger }: LinkEditorProps) {
   const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -47,31 +50,33 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
   const [type, setType] = useState<'embed' | 'external' | 'protocol'>('embed');
   const [openType, setOpenType] = useState('dashboard');
   const [loading, setLoading] = useState(false);
+  
   const { toast } = useToast();
-
-  const isEditing = !!linkToEdit;
-  const isPersonalLink = section === 'personal-links';
+  const firestore = useDb();
+  const { data: sections } = useCollection<Section>(firestore ? query(collection(firestore, 'sections'), orderBy('order', 'asc')) : null);
 
   useEffect(() => {
     if (open) {
-      const currentSection = isPersonalLink ? 'personal-links' : (linkToEdit?.section || section || SECTIONS[0].slug);
-      setName(linkToEdit?.name || '');
-      setUrl(linkToEdit?.url || '');
-      setDescription((linkToEdit as any)?.description || '');
-      setLinkSection(currentSection);
-      setType((linkToEdit?.type as any) || 'embed');
-      setOpenType(linkToEdit?.openType || 'dashboard');
-    }
-  }, [open, linkToEdit, section, isPersonalLink]);
+      const editing = !!linkToEdit;
+      setIsEditing(editing);
+      
+      const isPersonal = section === 'personal-links';
 
+      setName(editing ? linkToEdit.name : '');
+      setUrl(editing ? linkToEdit.url : '');
+      setDescription(editing ? (linkToEdit as any).description || '' : '');
+      setLinkSection(editing ? linkToEdit.section : (isPersonal ? 'personal-links' : section || ''));
+      setType(editing ? (linkToEdit.type as any) : 'embed');
+      setOpenType(editing ? linkToEdit.openType || 'dashboard' : 'dashboard');
+    }
+  }, [open, linkToEdit, section]);
+
+  const isPersonalLink = linkSection === 'personal-links';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !user) {
-      toast({
-        variant: 'destructive',
-        title: 'You must be logged in to add a link.',
-      });
+      toast({ variant: 'destructive', title: 'You must be logged in to add a link.' });
       return;
     }
     setLoading(true);
@@ -164,7 +169,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit = null, on
                             <SelectValue placeholder="Select a section" />
                         </SelectTrigger>
                         <SelectContent>
-                            {SECTIONS.filter(s => s.slug !== 'personal-links').map(s => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
+                            {sections?.filter(s => s.slug !== 'personal-links').map(s => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>

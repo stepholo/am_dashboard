@@ -1,3 +1,4 @@
+
 export type UserProfile = {
   uid: string;
   email: string;
@@ -18,3 +19,11 @@ export type DashboardLink = {
   description?: string;
   openType?: 'dashboard' | 'split-screen' | 'new-tab';
 };
+
+export type Section = {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string;
+  order: number;
+}

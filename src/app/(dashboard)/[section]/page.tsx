@@ -1,18 +1,27 @@
 
 "use client";
 import DashboardClient from "@/components/dashboard/DashboardClient";
-import { SECTIONS } from "@/lib/constants";
 import { usePathname } from 'next/navigation';
 import { Suspense } from "react";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import type { Section } from "@/lib/types";
 
 function SectionPageContent() {
   const pathname = usePathname();
   const sectionSlug = pathname.split('/')[1];
 
-  const sectionInfo = SECTIONS.find(s => s.slug === sectionSlug);
+  const db = useFirestore();
+  const { data: sections, isLoading } = useCollection<Section>(
+      db ? query(collection(db, 'sections'), where('slug', '==', sectionSlug)) : null
+  );
+  const sectionInfo = sections?.[0];
+
+  if (isLoading) {
+    return <p className="p-4">Loading section...</p>
+  }
 
   if (!sectionInfo) {
-    // This can be a notFound() call or a loading/error state
     return <div className="p-4">Section not found</div>;
   }
 
