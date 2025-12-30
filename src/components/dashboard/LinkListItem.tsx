@@ -27,13 +27,12 @@ import {
 import { MoreHorizontal, ExternalLink, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
 import type { DashboardLink } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
-import AddLinkButton from '../admin/AddLinkButton';
 import { deleteLink, deleteUserLink } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { useDashboard } from '@/hooks/useDashboard';
 
-export default function LinkListItem({ link, onUpdate, isPersonal = false }: { link: DashboardLink; onUpdate: () => void; isPersonal?: boolean; }) {
+export default function LinkListItem({ link, onUpdate, isPersonal = false, onEdit }: { link: DashboardLink; onUpdate: () => void; isPersonal?: boolean; onEdit: () => void; }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const db = useFirestore();
@@ -102,15 +101,13 @@ export default function LinkListItem({ link, onUpdate, isPersonal = false }: { l
                             <ExternalLink className="mr-2 h-4 w-4" />
                             <span>Open in New Tab</span>
                         </DropdownMenuItem>
-                        {canEdit && db && user && (
+                        {canEdit && (
                             <>
                                 <DropdownMenuSeparator />
-                                <AddLinkButton db={db} user={user} linkToEdit={link} onLinkAdded={onUpdate} trigger={
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        <span>Edit</span>
-                                    </DropdownMenuItem>
-                                } section={isPersonal ? 'personal-links' : link.section} />
+                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onEdit(); }}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Edit</span>
+                                </DropdownMenuItem>
                                 
                                 <AlertDialog>
                                 <AlertDialogTrigger asChild>

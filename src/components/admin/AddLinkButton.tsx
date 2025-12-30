@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -35,11 +34,11 @@ interface LinkEditorProps {
     section?: string;
     linkToEdit?: DashboardLink | null;
     onLinkAdded: () => void;
-    trigger?: React.ReactNode;
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
 }
 
-export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdded, trigger }: LinkEditorProps) {
-  const [open, setOpen] = useState(false);
+export default function LinkEditorDialog({ db, user, section, linkToEdit, onLinkAdded, isOpen, setIsOpen }: LinkEditorProps) {
   
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -55,8 +54,8 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
   const isPersonalLink = section === 'personal-links';
 
   useEffect(() => {
-    if (open) {
-      if (linkToEdit) {
+    if (isOpen) {
+      if (isEditing && linkToEdit) {
         setName(linkToEdit.name);
         setUrl(linkToEdit.url);
         setDescription(linkToEdit.description || '');
@@ -64,6 +63,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
         setType(linkToEdit.type as any);
         setOpenType(linkToEdit.openType || 'dashboard');
       } else {
+        // Reset for new link
         setName('');
         setUrl('');
         setDescription('');
@@ -72,7 +72,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
         setOpenType('dashboard');
       }
     }
-  }, [open, linkToEdit, section, isPersonalLink]);
+  }, [isOpen, isEditing, linkToEdit, section, isPersonalLink]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,7 +118,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
         }
         
         onLinkAdded();
-        setOpen(false);
+        setIsOpen(false);
     } catch (error) {
         toast({
             variant: 'destructive',
@@ -130,17 +130,10 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
     }
   };
 
-  const dialogTrigger = trigger ? (
-      <DialogTrigger asChild onClick={() => setOpen(true)}>{trigger}</DialogTrigger>
-  ) : (
-      <Button size="sm" onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />Add Link</Button>
-  )
-
   const isEmbeddable = type === 'embed';
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {dialogTrigger}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? `Edit ${isPersonalLink ? 'Personal' : ''} Link` : `Add New ${isPersonalLink ? 'Personal' : ''} Link`}</DialogTitle>
