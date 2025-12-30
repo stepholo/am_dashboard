@@ -20,11 +20,12 @@ import SearchResultsView from './SearchResultsView';
 export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string; }) {
     const { user } = useAuth();
     const db = useFirestore();
-    const { viewMode: globalViewMode, searchQuery } = useDashboard();
+    const { viewMode: globalViewMode } = useDashboard();
     
     const [localViewMode, setLocalViewMode] = useState<'grid' | 'list'>('grid');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingLink, setEditingLink] = useState<DashboardLink | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -37,16 +38,23 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
             where('section', '==', sectionSlug),
             orderBy('order', 'asc')
         );
-    }, [db, sectionSlug, user]);
+    }, [db, sectionSlug, user, refreshKey]);
     
     const { data: links, isLoading } = useCollection<DashboardLink>(linksQuery);
 
-    const refreshLinks = () => {};
+    const refreshLinks = () => {
+        setRefreshKey(oldKey => oldKey + 1);
+    };
 
     const handleAddLink = () => {
         setEditingLink(null);
         setIsEditorOpen(true);
     };
+
+    const handleEditLink = (link: DashboardLink) => {
+        setEditingLink(link);
+        setIsEditorOpen(true);
+    }
 
     if (globalViewMode === 'search') {
         return <SearchResultsView />;
@@ -60,23 +68,23 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
 
     return (
         <div className="flex flex-1 flex-col">
+            {db && user && (
+                <LinkEditorDialog
+                    db={db}
+                    user={user}
+                    section={sectionSlug}
+                    onLinkAdded={refreshLinks}
+                    isOpen={isEditorOpen}
+                    setIsOpen={setIsEditorOpen}
+                    linkToEdit={editingLink}
+                />
+            )}
             <div className="flex flex-col gap-8 p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold tracking-tight font-headline capitalize">{sectionName}</h1>
-                        {canAddLinks && db && user && (
-                            <>
-                                <Button size="sm" onClick={handleAddLink}><Plus className="mr-2 h-4 w-4" />Add Link</Button>
-                                <LinkEditorDialog
-                                    db={db}
-                                    user={user}
-                                    section={sectionSlug}
-                                    onLinkAdded={refreshLinks}
-                                    isOpen={isEditorOpen}
-                                    setIsOpen={setIsEditorOpen}
-                                    linkToEdit={editingLink}
-                                />
-                            </>
+                        {canAddLinks && (
+                            <Button size="sm" onClick={handleAddLink}><Plus className="mr-2 h-4 w-4" />Add Link</Button>
                         )}
                     </div>
                     
@@ -129,7 +137,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                                         link={link} 
                                         isPersonal={sectionSlug === 'personal-links'} 
                                         onUpdate={refreshLinks}
-                                        onEdit={() => { setEditingLink(link); setIsEditorOpen(true); }}
+                                        onEdit={() => handleEditLink(link)}
                                     />
                                 ))}
                             </div>
@@ -150,7 +158,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                                                 link={link} 
                                                 isPersonal={sectionSlug === 'personal-links'} 
                                                 onUpdate={refreshLinks}
-                                                onEdit={() => { setEditingLink(link); setIsEditorOpen(true); }}
+                                                onEdit={() => handleEditLink(link)}
                                             />
                                         ))}
                                     </TableBody>
