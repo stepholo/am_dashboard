@@ -10,7 +10,7 @@ export const Icons = {
 };
 
 export const initialSections = [
-  { name: 'PAYG Operations', slug: 'payg-operations', icon: 'Settings', order: 0 },
+  { name: 'PAYG Pipeline', slug: 'payg-pipeline', icon: 'Settings', order: 0 },
   { name: 'Invoicing', slug: 'invoicing', icon: 'FileText', order: 1 },
   { name: 'Tractor Service', slug: 'tractor-service', icon: 'Wrench', order: 2 },
   { name: 'Reports', slug: 'reports', icon: 'BarChart', order: 3 },

@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     if (!view) {
       // Redirect to the default section slug.
-      const defaultSection = initialSections[0]?.slug || 'payg-operations';
+      const defaultSection = initialSections[0]?.slug || 'payg-pipeline';
       redirect(`/${defaultSection}`);
     }
   }, [view]);

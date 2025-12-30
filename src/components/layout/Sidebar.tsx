@@ -10,10 +10,11 @@ import {
   SidebarMenuItem,
   SidebarFooter,
   useSidebar,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/Logo";
 import UserNav from "./UserNav";
-import type { UserProfile, DashboardLink, Section } from "@/lib/types";
+import type { UserProfile } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, orderBy, where } from "firebase/firestore";
@@ -24,6 +25,12 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import * as Icons from 'lucide-react';
 import { initialSections } from "@/lib/constants";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
@@ -88,7 +95,7 @@ const getIcon = (iconName: string): LucideIcon => {
 export default function AppSidebar({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { state, setOpenMobile } = useSidebar();
+  const { state, setOpen, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
   
   const sections = initialSections;
@@ -99,6 +106,9 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
   }
 
   const handleSectionClick = (slug: string) => {
+      if (isCollapsed) {
+        setOpen(true);
+      }
       router.push(`/${slug}`);
   }
 
@@ -113,38 +123,61 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
         </Link>
       </SidebarHeader>
       
-      <SidebarMenu className="flex-1 p-2">
-        <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
-          {sections?.map((section) => {
+       <SidebarMenu className="flex-1 p-2">
+        {isCollapsed ? (
+          <TooltipProvider>
+            {sections?.map((section) => {
               const Icon = getIcon(section.icon);
               const isActive = pathname.startsWith(`/${section.slug}`);
               return (
-                <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
-                   <SidebarMenuItem>
-                      <AccordionTrigger 
-                        onClick={() => !isCollapsed && handleSectionClick(section.slug)}
-                        className={cn(
-                          "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
-                          isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
-                          isCollapsed ? "!size-8 !p-2 justify-center" : "",
-                        )}
-                      >
-                          <div onClick={() => handleSectionClick(section.slug)} className="flex flex-1 items-center gap-2">
-                              <Icon className="h-4 w-4 shrink-0" />
-                              <span className={cn("truncate", isCollapsed && "hidden")}>{section.name}</span>
-                          </div>
-                      </AccordionTrigger>
-                   </SidebarMenuItem>
-                   {!isCollapsed && (
-                      <AccordionContent className="pl-8 pr-2">
-                         <SidebarSectionLinks sectionSlug={section.slug} onLinkClick={handleLinkClick} />
-                      </AccordionContent>
-                   )}
-                </AccordionItem>
+                <Tooltip key={section.slug} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuItem>
+                       <SidebarMenuButton 
+                          isActive={isActive} 
+                          onClick={() => handleSectionClick(section.slug)} 
+                          className="!size-8 !p-2 justify-center"
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="sr-only">{section.name}</span>
+                       </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{section.name}</TooltipContent>
+                </Tooltip>
               );
-            })
-          }
-        </Accordion>
+            })}
+          </TooltipProvider>
+        ) : (
+          <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
+            {sections?.map((section) => {
+                const Icon = getIcon(section.icon);
+                const isActive = pathname.startsWith(`/${section.slug}`);
+                return (
+                  <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
+                     <SidebarMenuItem>
+                        <AccordionTrigger 
+                          onClick={() => handleSectionClick(section.slug)}
+                          className={cn(
+                            "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
+                            isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
+                          )}
+                        >
+                            <div className="flex flex-1 items-center gap-2">
+                                <Icon className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{section.name}</span>
+                            </div>
+                        </AccordionTrigger>
+                     </SidebarMenuItem>
+                     <AccordionContent className="pl-8 pr-2">
+                           <SidebarSectionLinks sectionSlug={section.slug} onLinkClick={handleLinkClick} />
+                        </AccordionContent>
+                  </AccordionItem>
+                );
+              })
+            }
+          </Accordion>
+        )}
       </SidebarMenu>
 
       <SidebarFooter>
