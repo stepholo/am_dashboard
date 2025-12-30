@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useDebounce } from "use-debounce";
 import { Search, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
@@ -15,7 +15,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 
 function GlobalSearch() {
   const router = useRouter();
-  const { setSearchQuery: setGlobalSearchQuery, showGrid } = useDashboard();
+  const { setSearchQuery: setGlobalSearchQuery } = useDashboard();
   const db = useFirestore();
   const [localQuery, setLocalQuery] = useState("");
   const [debouncedQuery] = useDebounce(localQuery, 300);
