@@ -40,7 +40,6 @@ interface LinkEditorProps {
 
 export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdded, trigger }: LinkEditorProps) {
   const [open, setOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -52,23 +51,20 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
   
   const { toast } = useToast();
 
+  const isEditing = !!linkToEdit;
+  const isPersonalLink = section === 'personal-links';
+
   useEffect(() => {
     if (open) {
-      const editing = !!linkToEdit;
-      setIsEditing(editing);
-      
-      const isPersonal = section === 'personal-links';
-
-      setName(editing ? linkToEdit.name : '');
-      setUrl(editing ? linkToEdit.url : '');
-      setDescription(editing ? (linkToEdit as any).description || '' : '');
-      setLinkSection(editing ? linkToEdit.section : (isPersonal ? 'personal-links' : section || ''));
-      setType(editing ? (linkToEdit.type as any) : 'embed');
-      setOpenType(editing ? linkToEdit.openType || 'dashboard' : 'dashboard');
+      setName(isEditing ? linkToEdit.name : '');
+      setUrl(isEditing ? linkToEdit.url : '');
+      setDescription(isEditing ? (linkToEdit as any).description || '' : '');
+      setLinkSection(isEditing ? linkToEdit.section : (isPersonalLink ? 'personal-links' : section || ''));
+      setType(isEditing ? (linkToEdit.type as any) : 'embed');
+      setOpenType(isEditing ? linkToEdit.openType || 'dashboard' : 'dashboard');
     }
-  }, [open, linkToEdit, section]);
+  }, [open, isEditing, linkToEdit, section, isPersonalLink]);
 
-  const isPersonalLink = linkSection === 'personal-links';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
