@@ -56,14 +56,23 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
 
   useEffect(() => {
     if (open) {
-      setName(isEditing ? linkToEdit.name : '');
-      setUrl(isEditing ? linkToEdit.url : '');
-      setDescription(isEditing ? (linkToEdit as any).description || '' : '');
-      setLinkSection(isEditing ? linkToEdit.section : (isPersonalLink ? 'personal-links' : section || ''));
-      setType(isEditing ? (linkToEdit.type as any) : 'embed');
-      setOpenType(isEditing ? linkToEdit.openType || 'dashboard' : 'dashboard');
+      if (linkToEdit) {
+        setName(linkToEdit.name);
+        setUrl(linkToEdit.url);
+        setDescription(linkToEdit.description || '');
+        setLinkSection(linkToEdit.section);
+        setType(linkToEdit.type as any);
+        setOpenType(linkToEdit.openType || 'dashboard');
+      } else {
+        setName('');
+        setUrl('');
+        setDescription('');
+        setLinkSection(isPersonalLink ? 'personal-links' : section || '');
+        setType('embed');
+        setOpenType('dashboard');
+      }
     }
-  }, [open, isEditing, linkToEdit, section, isPersonalLink]);
+  }, [open, linkToEdit, section, isPersonalLink]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,6 +86,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
     const linkData: Partial<DashboardLink> = {
         name,
         url,
+        description,
         type,
         openType: type === 'embed' ? openType : 'new-tab',
         order: (linkToEdit as any)?.order ?? 999,
@@ -84,7 +94,6 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
 
     try {
         if (isPersonalLink) {
-            linkData.description = description;
             if (isEditing && linkToEdit) {
                 updateUserLink(db, user.uid, linkToEdit.id, linkData);
                 toast({ title: 'Personal link update initiated.' });
@@ -147,12 +156,10 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
                 <Input id="url" value={url} onChange={e => setUrl(e.target.value)} className="col-span-3" required />
             </div>
             
-            {isPersonalLink && (
-                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">Description</Label>
-                    <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} className="col-span-3" />
-                </div>
-            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} className="col-span-3" />
+            </div>
 
             {!isPersonalLink && (
                 <div className="grid grid-cols-4 items-center gap-4">
