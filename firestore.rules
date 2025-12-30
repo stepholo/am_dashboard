@@ -22,6 +22,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /sections/{sectionId} {
+      // Any signed-in user can read the sections.
+      allow get, list: if isSignedIn();
+      
+      // Only Admins can create, update, or delete sections.
+      allow write: if isAdmin();
+    }
+
     match /dashboardLinks/{linkId} {
       // Any signed-in user can read the links.
       allow get, list: if isSignedIn();
