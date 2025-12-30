@@ -8,7 +8,6 @@ import { ADMIN_EMAIL, ALLOWED_DOMAIN } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { signOut } from '@/lib/firebase/auth';
-import { seedInitialData } from '@/lib/firebase/firestore';
 
 export const useAuth = () => {
     const { user: firebaseUser, isUserLoading } = useUser();
@@ -34,10 +33,6 @@ export const useAuth = () => {
                         };
                         await setDoc(userDocRef, newUserProfile);
                         setUserProfile(newUserProfile);
-                        // Seed data for the first admin user
-                        if (newUserProfile.role === 'admin') {
-                            await seedInitialData(firestore);
-                        }
                     } else {
                         const existingProfile = userDoc.data() as UserProfile;
                         let needsUpdate = false;
@@ -48,11 +43,6 @@ export const useAuth = () => {
                         if (existingProfile.role !== correctRole) {
                             updatedProfile.role = correctRole;
                             needsUpdate = true;
-                        }
-                        
-                        // Seed data if admin logs in and data is missing
-                        if (updatedProfile.role === 'admin') {
-                            await seedInitialData(firestore);
                         }
 
                         if (needsUpdate) {

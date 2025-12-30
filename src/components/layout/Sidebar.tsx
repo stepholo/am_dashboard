@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import * as Icons from 'lucide-react';
+import { initialSections } from "@/lib/constants";
 
 function SidebarSectionLinks({ sectionSlug, onLinkClick }: { sectionSlug: string; onLinkClick: () => void }) {
     const db = useFirestore();
@@ -90,13 +91,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
   const { state, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
   
-  const db = useFirestore();
-  const sectionsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'sections'), orderBy('order', 'asc'));
-  }, [db]);
-  const { data: sections, isLoading: sectionsLoading } = useCollection<Section>(sectionsQuery);
-
+  const sections = initialSections;
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
@@ -120,10 +115,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
       
       <SidebarMenu className="flex-1 p-2">
         <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
-          {sectionsLoading ? (
-            [...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full mb-1" />)
-          ) : (
-            sections?.map((section) => {
+          {sections?.map((section) => {
               const Icon = getIcon(section.icon);
               const isActive = pathname.startsWith(`/${section.slug}`);
               return (
@@ -151,7 +143,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
                 </AccordionItem>
               );
             })
-          )}
+          }
         </Accordion>
       </SidebarMenu>
 

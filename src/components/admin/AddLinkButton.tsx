@@ -23,12 +23,11 @@ import {
 } from '@/components/ui/select';
 import { addLink, updateLink, addUserLink, updateUserLink } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { DashboardLink, UserProfile, Section } from '@/lib/types';
+import type { DashboardLink, UserProfile } from '@/lib/types';
 import { Plus } from 'lucide-react';
 import { Firestore } from 'firebase/firestore';
 import { Textarea } from '../ui/textarea';
-import { useCollection, useFirestore as useDb } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { initialSections } from '@/lib/constants';
 
 interface LinkEditorProps {
     db: Firestore;
@@ -52,8 +51,6 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
   const [loading, setLoading] = useState(false);
   
   const { toast } = useToast();
-  const firestore = useDb();
-  const { data: sections } = useCollection<Section>(firestore ? query(collection(firestore, 'sections'), orderBy('order', 'asc')) : null);
 
   useEffect(() => {
     if (open) {
@@ -169,7 +166,7 @@ export default function AddLinkButton({ db, user, section, linkToEdit, onLinkAdd
                             <SelectValue placeholder="Select a section" />
                         </SelectTrigger>
                         <SelectContent>
-                            {sections?.filter(s => s.slug !== 'personal-links').map(s => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
+                            {initialSections?.filter(s => s.slug !== 'personal-links').map(s => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
