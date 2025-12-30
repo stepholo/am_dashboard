@@ -17,7 +17,6 @@ import { placeholderImages } from '../placeholder-images';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { initialSections } from '../constants';
 
-const SEED_FLAG_DOC = 'internal/seedingFlags';
 
 export async function seedInitialData(db: Firestore) {
     const sectionsCollectionRef = collection(db, 'sections');
@@ -48,9 +47,6 @@ export async function seedInitialData(db: Firestore) {
             });
         });
         
-        const seedMarkerRef = doc(db, SEED_FLAG_DOC, 'initialSeed');
-        batch.set(seedMarkerRef, { completedOn: new Date().toISOString() });
-
         await batch.commit();
         console.log('Database seeding complete.');
     } else {

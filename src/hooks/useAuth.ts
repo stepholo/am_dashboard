@@ -49,6 +49,11 @@ export const useAuth = () => {
                             updatedProfile.role = correctRole;
                             needsUpdate = true;
                         }
+                        
+                        // Seed data if admin logs in and data is missing
+                        if (updatedProfile.role === 'admin') {
+                            await seedInitialData(firestore);
+                        }
 
                         if (needsUpdate) {
                             await setDoc(userDocRef, updatedProfile, { merge: true });
