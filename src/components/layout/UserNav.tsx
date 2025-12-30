@@ -1,3 +1,4 @@
+
 "use client";
 
 import { signOut as firebaseSignOut } from '@/lib/firebase/auth';
@@ -43,7 +44,7 @@ export default function UserNav({ user }: { user: UserProfile }) {
   return (
     <div className={cn(
       "flex w-full items-center", 
-      isCollapsed ? "justify-center" : "justify-between"
+      isCollapsed ? "flex-col gap-2" : "justify-between"
     )}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -76,7 +77,7 @@ export default function UserNav({ user }: { user: UserProfile }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button variant="ghost" size="icon" className={cn("h-8 w-8", isCollapsed ? "mt-2" : "flex")} onClick={toggleSidebar}>
+      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar}>
         <ChevronsLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
         <span className="sr-only">Toggle sidebar</span>
       </Button>
