@@ -128,7 +128,23 @@
           "role": { "type": "string", "enum": ["admin", "viewer"] }
         },
         "required": ["uid", "email", "role"]
-      }
+    },
+    "BugReport": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "BugReport",
+        "type": "object",
+        "description": "Represents a bug report submitted by a user.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the bug report." },
+            "description": { "type": "string", "description": "Detailed description of the bug." },
+            "url": { "type": "string", "format": "uri", "description": "The URL where the bug occurred." },
+            "userId": { "type": "string", "description": "The UID of the user who submitted the report." },
+            "userEmail": { "type": "string", "format": "email", "description": "The email of the user who submitted the report." },
+            "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the report was created." },
+            "status": { "type": "string", "enum": ["open", "in-progress", "closed"], "description": "The status of the bug report." }
+        },
+        "required": ["id", "description", "url", "userId", "userEmail", "createdAt", "status"]
+    }
   },
   "auth": {
     "providers": [
@@ -188,6 +204,17 @@
             "params": [
                 { "name": "uid", "description": "The Firebase Auth UID of the user." },
                 { "name": "linkId", "description": "The unique ID for the user's link." }
+            ]
+        }
+      },
+      {
+        "path": "/bugReports/{bugId}",
+        "definition": {
+            "entityName": "BugReport",
+            "schema": { "$ref": "#/backend/entities/BugReport" },
+            "description": "Stores bug reports submitted by users.",
+            "params": [
+                { "name": "bugId", "description": "The unique ID for the bug report." }
             ]
         }
       }

@@ -48,5 +48,13 @@ service cloud.firestore {
         // Any signed-in user can manage their own links.
         allow read, write, delete: if isSignedIn() && isOwner(uid);
     }
+
+    match /bugReports/{bugId} {
+      // Any signed-in user can create a bug report.
+      allow create: if isSignedIn();
+      
+      // Only admins can read, update, or delete bug reports.
+      allow read, update, delete: if isAdmin();
+    }
   }
 }
