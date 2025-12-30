@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Section } from '@/lib/types';
 import { Settings, Plus, Trash2 } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, writeBatch, doc, serverTimestamp } from 'firebase/firestore';
 import { addSection, updateSection } from '@/lib/firebase/firestore';
 
@@ -25,7 +25,13 @@ import { addSection, updateSection } from '@/lib/firebase/firestore';
 export default function ManageSectionsDialog() {
   const [open, setOpen] = useState(false);
   const db = useFirestore();
-  const { data: sections, isLoading } = useCollection<Section>(db ? query(collection(db, 'sections'), orderBy('order', 'asc')) : null);
+  
+  const sectionsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'sections'), orderBy('order', 'asc'));
+  }, [db]);
+
+  const { data: sections, isLoading } = useCollection<Section>(sectionsQuery);
   const [localSections, setLocalSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
