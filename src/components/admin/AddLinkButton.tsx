@@ -29,16 +29,16 @@ import { Textarea } from '../ui/textarea';
 import { initialSections } from '@/lib/constants';
 
 interface LinkEditorProps {
-    db: Firestore;
-    user: UserProfile | null;
-    section?: string;
-    linkToEdit?: DashboardLink | null;
     onLinkAdded: () => void;
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
+    db: Firestore | null;
+    user: UserProfile | null;
+    section?: string;
+    linkToEdit?: DashboardLink | null;
 }
 
-export default function LinkEditorDialog({ db, user, section, linkToEdit, onLinkAdded, isOpen, setIsOpen }: LinkEditorProps) {
+export default function LinkEditorDialog({ onLinkAdded, isOpen, setIsOpen, db, user, section, linkToEdit }: LinkEditorProps) {
   
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -52,18 +52,17 @@ export default function LinkEditorDialog({ db, user, section, linkToEdit, onLink
 
   const isEditing = !!linkToEdit;
   const isPersonalLink = section === 'personal-links';
-
+  
   useEffect(() => {
     if (isOpen) {
-      if (isEditing && linkToEdit) {
-        setName(linkToEdit.name);
-        setUrl(linkToEdit.url);
+      if (linkToEdit) {
+        setName(linkToEdit.name || '');
+        setUrl(linkToEdit.url || '');
         setDescription(linkToEdit.description || '');
-        setLinkSection(linkToEdit.section);
-        setType(linkToEdit.type as any);
+        setLinkSection(linkToEdit.section || '');
+        setType((linkToEdit.type as any) || 'embed');
         setOpenType(linkToEdit.openType || 'dashboard');
       } else {
-        // Reset for new link
         setName('');
         setUrl('');
         setDescription('');
@@ -72,7 +71,7 @@ export default function LinkEditorDialog({ db, user, section, linkToEdit, onLink
         setOpenType('dashboard');
       }
     }
-  }, [isOpen, isEditing, linkToEdit, section, isPersonalLink]);
+  }, [isOpen, linkToEdit, section, isPersonalLink]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,7 +128,7 @@ export default function LinkEditorDialog({ db, user, section, linkToEdit, onLink
         setLoading(false);
     }
   };
-
+  
   const isEmbeddable = type === 'embed';
 
   return (
@@ -181,7 +180,7 @@ export default function LinkEditorDialog({ db, user, section, linkToEdit, onLink
                     </SelectContent>
                 </Select>
             </div>
-
+            
             {isEmbeddable && (
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="openType" className="text-right">Open In</Label>
