@@ -30,7 +30,7 @@ export const useAuth = () => {
                             email: fbUser.email,
                             displayName: fbUser.displayName || 'AM Dashboard User',
                             photoURL: fbUser.photoURL || '',
-                            role: fbUser.email === ADMIN_EMAIL ? 'admin' : 'viewer',
+                            role: fbUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'viewer',
                         };
                         await setDoc(userDocRef, newUserProfile);
                         setUserProfile(newUserProfile);
@@ -44,7 +44,7 @@ export const useAuth = () => {
                         const updatedProfile = { ...existingProfile };
 
                         // Ensure role is correct based on email
-                        const correctRole = existingProfile.email === ADMIN_EMAIL ? 'admin' : 'viewer';
+                        const correctRole = existingProfile.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'viewer';
                         if (existingProfile.role !== correctRole) {
                             updatedProfile.role = correctRole;
                             needsUpdate = true;

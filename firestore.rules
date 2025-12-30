@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -12,8 +13,8 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // This rule grants admin rights to the specific user email.
-      return request.auth.token.email == "stephen@hellotractor.com";
+      // This rule grants admin rights to the specific user email, case-insensitively.
+      return request.auth.token.email.lower() == "stephen@hellotractor.com";
     }
     
     // Internal collection for metadata. Only admins can write to it.
