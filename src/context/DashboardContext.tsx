@@ -10,17 +10,20 @@ export type PaneContent = {
   name: string;
 };
 
-type ViewMode = 'grid' | 'dashboard';
+type ViewMode = 'grid' | 'dashboard' | 'search';
 
 interface DashboardContextType {
   viewMode: ViewMode;
   openPanes: PaneContent[];
   activePaneId: string | null;
+  searchQuery: string;
   
   openInDashboard: (pane: PaneContent) => void;
   showGrid: () => void;
   closePane: (paneId: string) => void;
   setActivePane: (paneId: string) => void;
+  setSearchQuery: (query: string) => void;
+  enterSearchMode: () => void;
 }
 
 export const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -35,6 +38,7 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
     const view = searchParams.get('view') as ViewMode | null;
     const panesString = searchParams.get('panes');
     const activeId = searchParams.get('active');
+    const query = searchParams.get('q') || '';
     
     let openPanes: PaneContent[] = [];
     if (panesString) {
@@ -45,34 +49,54 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
       }
     }
     
+    let initialViewMode: ViewMode = 'grid';
+    if (query) {
+      initialViewMode = 'search';
+    } else if (view === 'dashboard') {
+      initialViewMode = 'dashboard';
+    }
+
     return {
-      viewMode: view === 'dashboard' ? 'dashboard' : 'grid',
+      viewMode: initialViewMode,
       openPanes,
       activePaneId: activeId ?? (openPanes.length > 0 ? openPanes[0].id : null),
+      searchQuery: query,
     };
   };
 
-  const [viewMode, setViewMode] = useState<ViewMode>(getInitialState().viewMode);
-  const [openPanes, setOpenPanes] = useState<PaneContent[]>(getInitialState().openPanes);
-  const [activePaneId, setActivePaneId] = useState<string | null>(getInitialState().activePaneId);
+  const initialState = getInitialState();
+  const [viewMode, setViewMode] = useState<ViewMode>(initialState.viewMode);
+  const [openPanes, setOpenPanes] = useState<PaneContent[]>(initialState.openPanes);
+  const [activePaneId, setActivePaneId] = useState<string | null>(initialState.activePaneId);
+  const [searchQuery, _setSearchQuery] = useState<string>(initialState.searchQuery);
 
-  const updateUrl = (newView: ViewMode, newPanes: PaneContent[], newActiveId: string | null) => {
+  const updateUrl = useCallback((paramsToUpdate: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (newView === 'grid' || newPanes.length === 0) {
-      params.delete('view');
-      params.delete('panes');
-      params.delete('active');
-    } else {
-      params.set('view', 'dashboard');
-      params.set('panes', encodeURIComponent(JSON.stringify(newPanes)));
-      if (newActiveId) {
-        params.set('active', newActiveId);
+    Object.entries(paramsToUpdate).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
       } else {
-        params.delete('active');
+        params.set(key, value);
       }
-    }
+    });
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  }, [pathname, router, searchParams]);
+
+  const setSearchQuery = useCallback((query: string) => {
+    _setSearchQuery(query);
+    if (query) {
+      setViewMode('search');
+      updateUrl({ view: 'search', q: query });
+    } else {
+      setViewMode('grid');
+      updateUrl({ view: null, q: null });
+    }
+  }, [updateUrl]);
+
+  const enterSearchMode = useCallback(() => {
+    setViewMode('search');
+    updateUrl({ view: 'search' });
+  }, [updateUrl]);
   
   const openInDashboard = useCallback((pane: PaneContent) => {
     let newPanes = [...openPanes];
@@ -85,13 +109,19 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
     setOpenPanes(newPanes);
     setActivePaneId(pane.id);
     setViewMode('dashboard');
-    updateUrl('dashboard', newPanes, pane.id);
-  }, [openPanes, router, pathname]);
+    updateUrl({ 
+      view: 'dashboard', 
+      panes: encodeURIComponent(JSON.stringify(newPanes)),
+      active: pane.id,
+      q: null
+    });
+  }, [openPanes, updateUrl]);
 
   const showGrid = useCallback(() => {
     setViewMode('grid');
-    updateUrl('grid', [], null);
-  }, [router, pathname]);
+    _setSearchQuery('');
+    updateUrl({ view: null, panes: null, active: null, q: null });
+  }, [updateUrl]);
   
   const closePane = useCallback((paneId: string) => {
     const newPanes = openPanes.filter(p => p.id !== paneId);
@@ -102,34 +132,45 @@ export const DashboardProvider = ({ children }: { children: React.ReactNode }) =
     } else if (activePaneId === paneId) {
       const newActiveId = newPanes[newPanes.length - 1].id;
       setActivePaneId(newActiveId);
-      updateUrl('dashboard', newPanes, newActiveId);
+      updateUrl({
+        view: 'dashboard',
+        panes: encodeURIComponent(JSON.stringify(newPanes)),
+        active: newActiveId
+      });
     } else {
-      updateUrl('dashboard', newPanes, activePaneId);
+      updateUrl({
+        view: 'dashboard',
+        panes: encodeURIComponent(JSON.stringify(newPanes)),
+        active: activePaneId
+      });
     }
-  }, [openPanes, activePaneId, showGrid]);
+  }, [openPanes, activePaneId, showGrid, updateUrl]);
   
   const setActivePane = useCallback((paneId: string) => {
     setActivePaneId(paneId);
-    updateUrl('dashboard', openPanes, paneId);
-  }, [openPanes, router, pathname]);
+    updateUrl({ active: paneId });
+  }, [updateUrl]);
 
-  // Update state if URL changes from external navigation (e.g. back/forward buttons)
   useEffect(() => {
     const stateFromUrl = getInitialState();
     setViewMode(stateFromUrl.viewMode);
     setOpenPanes(stateFromUrl.openPanes);
     setActivePaneId(stateFromUrl.activePaneId);
+    _setSearchQuery(stateFromUrl.searchQuery);
   }, [searchParams]);
 
   const value = useMemo(() => ({
     viewMode,
     openPanes,
     activePaneId,
+    searchQuery,
     openInDashboard,
     showGrid,
     closePane,
     setActivePane,
-  }), [viewMode, openPanes, activePaneId, openInDashboard, showGrid, closePane, setActivePane]);
+    setSearchQuery,
+    enterSearchMode,
+  }), [viewMode, openPanes, activePaneId, searchQuery, openInDashboard, showGrid, closePane, setActivePane, setSearchQuery, enterSearchMode]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 };

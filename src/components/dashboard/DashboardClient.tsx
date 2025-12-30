@@ -11,19 +11,18 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import ContentView from './ContentView';
 import { useDashboard } from '@/hooks/useDashboard';
 import { collection, query, orderBy, where } from 'firebase/firestore';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, List } from 'lucide-react';
 import LinkListItem from './LinkListItem';
-import { Table, TableBody, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableHeader, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import SearchResultsView from './SearchResultsView';
 
 export default function DashboardClient({ sectionSlug, sectionName }: { sectionSlug: string; sectionName: string; }) {
     const { user } = useAuth();
     const db = useFirestore();
-    const { viewMode: globalViewMode } = useDashboard();
+    const { viewMode: globalViewMode, searchQuery } = useDashboard();
     
     const [localViewMode, setLocalViewMode] = useState<'grid' | 'list'>('grid');
-    const [searchQuery, setSearchQuery] = useState('');
 
     const linksQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -40,20 +39,15 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
     
     const { data: links, isLoading } = useCollection<DashboardLink>(linksQuery);
 
-    const refreshLinks = () => {
-        // useCollection now handles this automatically.
-        // This function's presence is to re-trigger things if needed,
-        // but for now, it can be empty as the hook handles real-time updates.
+    const refreshLinks = () => {};
+
+    if (globalViewMode === 'search') {
+        return <SearchResultsView />;
     }
 
     if (globalViewMode !== 'grid') {
         return <ContentView />;
     }
-
-    const filteredLinks = links?.filter(link => 
-        link.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        link.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
     
     const canAddLinks = user?.role === 'admin' || sectionSlug === 'personal-links';
 
@@ -67,12 +61,6 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <Input 
-                            placeholder="Search links..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full sm:max-w-xs"
-                        />
                         <div className="flex items-center gap-2 ml-auto">
                             <Button variant={localViewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setLocalViewMode('grid')}>
                                 <LayoutGrid className="h-5 w-5" />
@@ -115,7 +103,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                     ) : (
                         localViewMode === 'grid' ? (
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                {filteredLinks?.map(link => (
+                                {links?.map(link => (
                                     <LinkCard key={link.id} link={link} isPersonal={sectionSlug === 'personal-links'} onUpdate={refreshLinks}/>
                                 ))}
                             </div>
@@ -130,7 +118,7 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredLinks?.map(link => (
+                                        {links?.map(link => (
                                             <LinkListItem key={link.id} link={link} isPersonal={sectionSlug === 'personal-links'} onUpdate={refreshLinks}/>
                                         ))}
                                     </TableBody>
@@ -143,4 +131,3 @@ export default function DashboardClient({ sectionSlug, sectionName }: { sectionS
         </div>
     );
 }
-

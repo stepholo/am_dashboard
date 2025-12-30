@@ -37,8 +37,8 @@ export default function DashboardLayout({
 
 
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <DashboardProvider>
+    <DashboardProvider>
+      <Suspense fallback={<p>Loading...</p>}>
           <SidebarProvider>
               <AppSidebar user={user} />
               <SidebarInset>
@@ -48,7 +48,7 @@ export default function DashboardLayout({
                 </div>
               </SidebarInset>
           </SidebarProvider>
-      </DashboardProvider>
-    </Suspense>
+      </Suspense>
+    </DashboardProvider>
   );
 }
