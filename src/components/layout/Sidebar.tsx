@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import Logo from "@/components/Logo";
 import UserNav from "./UserNav";
-import type { UserProfile } from "@/lib/types";
+import type { UserProfile, DashboardLink } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, orderBy, where } from "firebase/firestore";
@@ -149,7 +149,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
             })}
           </TooltipProvider>
         ) : (
-          <Accordion type="single" collapsible defaultValue={pathname.split('/')[1]}>
+          <Accordion type="single" collapsible defaultValue={pathname.split('/')[1] || 'payg-pipeline'}>
             {sections?.map((section) => {
                 const Icon = getIcon(section.icon);
                 const isActive = pathname.startsWith(`/${section.slug}`);
@@ -157,7 +157,7 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
                   <AccordionItem key={section.slug} value={section.slug} className="border-b-0">
                      <SidebarMenuItem>
                         <AccordionTrigger 
-                          onClick={() => handleSectionClick(section.slug)}
+                          onClick={() => router.push(`/${section.slug}`)}
                           className={cn(
                             "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 [&>svg:last-child]:h-4 [&>svg:last-child]:w-4 [&>svg:last-child]:shrink-0",
                             isActive ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : "",
