@@ -91,7 +91,12 @@ export default function AppSidebar({ user }: { user: UserProfile }) {
   const isCollapsed = state === 'collapsed';
   
   const db = useFirestore();
-  const { data: sections, isLoading: sectionsLoading } = useCollection<Section>(db ? query(collection(db, 'sections'), orderBy('order', 'asc')) : null);
+  const sectionsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'sections'), orderBy('order', 'asc'));
+  }, [db]);
+  const { data: sections, isLoading: sectionsLoading } = useCollection<Section>(sectionsQuery);
+
 
   const handleLinkClick = () => {
     // Close mobile sidebar when a link is clicked
