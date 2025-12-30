@@ -3,7 +3,7 @@
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import { usePathname } from 'next/navigation';
 import { Suspense } from "react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import type { Section } from "@/lib/types";
 
@@ -12,9 +12,13 @@ function SectionPageContent() {
   const sectionSlug = pathname.split('/')[1];
 
   const db = useFirestore();
-  const { data: sections, isLoading } = useCollection<Section>(
-      db ? query(collection(db, 'sections'), where('slug', '==', sectionSlug)) : null
-  );
+  
+  const sectionsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'sections'), where('slug', '==', sectionSlug));
+  }, [db, sectionSlug]);
+
+  const { data: sections, isLoading } = useCollection<Section>(sectionsQuery);
   const sectionInfo = sections?.[0];
 
   if (isLoading) {
