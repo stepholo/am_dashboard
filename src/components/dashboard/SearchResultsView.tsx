@@ -12,9 +12,11 @@ import { Skeleton } from "../ui/skeleton";
 import EmptyState from "./EmptyState";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SearchResultsView() {
   const { searchQuery, showGrid } = useDashboard();
+  const { user } = useAuth();
   const db = useFirestore();
 
   const allLinksQuery = useMemoFirebase(
@@ -24,11 +26,8 @@ export default function SearchResultsView() {
   const { data: allLinks, isLoading } = useCollection<DashboardLink>(allLinksQuery);
   
   const personalLinksQuery = useMemoFirebase(
-    // NOTE: This part needs a user ID to be truly functional.
-    // For now, we'll assume a placeholder or that the logic will be adapted
-    // when a user is properly authenticated and their ID is available.
-    () => (db ? query(collection(db, "users", "placeholder-user-id", "dashboardLinks"), orderBy("name")) : null),
-    [db]
+    () => (db && user ? query(collection(db, "users", user.uid, "dashboardLinks"), orderBy("name")) : null),
+    [db, user]
   );
   const { data: personalLinks, isLoading: isLoadingPersonal } = useCollection<DashboardLink>(personalLinksQuery);
 
